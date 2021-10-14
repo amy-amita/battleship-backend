@@ -1,6 +1,6 @@
-import { io } from "socket.io-client";
+const io = require("socket.io-client");
 
-const socket = io(3031);
+const socket = io("http://localhost:3031");
 socket.on("connect", () => {
   console.log(socket.id);
 });
