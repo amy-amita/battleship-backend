@@ -3,8 +3,7 @@ const mongoose = require("mongoose");
 const userSchema = mongoose.Schema({
   username: String,
   socketId: String,
-  roomId: Number,
-  avatarNo: Number,
+  avatarName: String,
 });
 
 userSchema.statics.validate = async function (username) {

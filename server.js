@@ -12,9 +12,21 @@ mongoose.connect(
 
 console.log("Server Started!");
 
+
+
 io.on("connection", (socket) => {
   console.log(socket.id);
 
+  socket.on("userData", async (username, avatarName) => {
+    const user = new User({username, socketId: socket.id, avatarName});
+    const valid = await User.findOne({username});
+    if(!valid) {
+      await user.save();
+    }else {
+      socket.emit("messageToClient", 1); //USERNAME IS ALREADY TAKEN
+    }
+  });
+  
   socket.on("messageToServer", (message, roomId) => {
     socket.to(roomId).emit("messageToClient", message);
   });

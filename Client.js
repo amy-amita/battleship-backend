@@ -23,7 +23,8 @@ const prompt = require("prompt-sync")();
 // })
 
 
-const socket = io("http://52.253.86.179:3031");
+const socket = io("http://bebd-49-228-164-20.ngrok.io");
+console.log(typeof(socket));
 socket.on("connect", () => {
   console.log(socket.id);
 });

@@ -2,8 +2,8 @@ const mongoose = require("mongoose");
 
 const roomSchema = mongoose.Schema({
   roomId: String,
-  playerOneSocketId: String,
-  playerTwoSocketId: String,
+  playerOneName: String,
+  playerTwoName: String,
   playerOneCurrentScore: Number,
   playerTwoCurrentScore: Number,
   playerOneGameWin: Number,
