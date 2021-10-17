@@ -1,23 +1,39 @@
 const io = require("socket.io-client");
 const readline = require("readline");
+const { format } = require("path");
 const prompt = require("prompt-sync")();
+
+// const jsdom = require("jsdom");
+// const { JSDOM } = jsdom;
+
+// const joinRoomButton = document.getElementById("room-button");
+// const messageInput = document.getElementById("message-input");
+// const roomInput = document.getElementById("room-input");
+// const from = document.getElementById("form");
+
+// form.addEventListener("submit", e => {
+//   e.preventDeafult()
+//   const message = messageInput.value;
+//   const roomId = roomInput.value;
+
+//   if (message === "") return
+//   displayMessage(message);
+
+//   messageInput.value = "";
+// })
+
 
 const socket = io("http://localhost:3031");
 socket.on("connect", () => {
   console.log(socket.id);
 });
 
-let room = socket.id;
+let roomId = "aaa";
 
-const message = readline.createInterface({
-  input: process.stdin,
-  output: process.stdout,
+socket.emit("join-room", roomId, message => { 
+  console.log(message);
 });
-message.question("message: ");
 
-
-socket.emit('messageToServer', message, room);
-
-socket.emit("join-room", room => { 
-
-})
+// socket.emit("messageToServer", (message, roomId) => {
+//   const input = prompt();
+// })
