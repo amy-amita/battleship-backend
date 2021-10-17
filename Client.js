@@ -23,7 +23,7 @@ const prompt = require("prompt-sync")();
 // })
 
 
-const socket = io("http://localhost:3031");
+const socket = io("http://52.253.86.179:3031");
 socket.on("connect", () => {
   console.log(socket.id);
 });
