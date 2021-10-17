@@ -4,22 +4,13 @@ const mongoose = require("mongoose");
 const session = require("express-session");
 const User = require("./models/userSchema");
 const room = require("./models/roomSchema");
-const bodyParser = require("body-parser");
-
-app.use(bodyParser.json());
-
-console.log("Server Started!");
 
 mongoose.connect(
-  "mongodb://localhost:27017/realtimeProject",
-  { useNewUrlParser: true },
-  function (err) {
-    if (err) {
-      throw err;
-    }
-    console.log("Database connected");
-  }
+  "mongodb+srv://testuser:battleship@cluster0.w9j5l.mongodb.net/battleship?retryWrites=true&w=majority",
+  { useNewUrlParser: true, useUnifiedTopology: true }
 );
+
+console.log("Server Started!");
 
 io.on("connection", (socket) => {
   console.log(socket.id);
@@ -27,10 +18,12 @@ io.on("connection", (socket) => {
   socket.on("messageToServer", (message, roomId) => {
     socket.to(roomId).emit("messageToClient", message);
   });
-  // socket.on("join-room", (room, callback) => {
-  //   socket.join(room);
-  //   callback(`Joined Room ${room}`);
-  // });
+
+  socket.on("join-room", (room, cb) => {
+    socket.join(room);
+    cb(`Joined Room ${room}`);
+  });
+
   socket.on("disconnect", () => {
     console.log("Disconnected!");
   });
