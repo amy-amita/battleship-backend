@@ -10,15 +10,13 @@ mongoose.connect(
   { useNewUrlParser: true, useUnifiedTopology: true }
 );
 
-
 console.log("Server Started!");
-
 
 io.on("connection", (socket) => {
   console.log(socket.id);
 
   socket.on("messageToServer", (message, roomId) => {
-      socket.to(roomId).emit("messageToClient", message);
+    socket.to(roomId).emit("messageToClient", message);
   });
 
   socket.on("join-room", (room, cb) => {
