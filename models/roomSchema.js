@@ -8,9 +8,11 @@ const roomSchema = mongoose.Schema({
   playerTwoCurrentScore: Number,
   playerOneGameWin: Number,
   playerTwoGameWin: Number,
+  playerOneShipPos: Array,
+  playerOneTwoPos: Array,
+  playerOneHitMissPos: Array,
+  playerTwoHitMissPos: Array,
   time: Number,
-  shipPosition: Array,
-  hitMissPosition: Array,
 });
 
 module.exports = mongoose.model("Room", roomSchema);

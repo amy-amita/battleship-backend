@@ -1,6 +1,7 @@
 const io = require("socket.io-client");
 const readline = require("readline");
 const { format } = require("path");
+const { SSL_OP_NO_TICKET } = require("constants");
 const prompt = require("prompt-sync")();
 
 // const jsdom = require("jsdom");
@@ -22,18 +23,19 @@ const prompt = require("prompt-sync")();
 //   messageInput.value = "";
 // })
 
-
-const socket = io("http://bebd-49-228-164-20.ngrok.io");
-console.log(typeof(socket));
+const socket = io("http://localhost:3031");
+console.log(typeof socket);
 socket.on("connect", () => {
   console.log(socket.id);
 });
 
 let roomId = "aaa";
 
-socket.emit("join-room", roomId, message => { 
+socket.emit("join-room", roomId, (message) => {
   console.log(message);
 });
+
+socket.emit("createGame", "amy");
 
 // socket.emit("messageToServer", (message, roomId) => {
 //   const input = prompt();
