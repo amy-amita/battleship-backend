@@ -27,10 +27,10 @@ io.on("connection", (socket) => {
     //   socket.emit("messageToClient", 1); //USERNAME IS ALREADY TAKEN
     // }
   });
-
+  let room;
   // create game
-  socket.on("createGame", async (username) => {
-    let room = new Room({
+  socket.on("createGame", async (username, cb) => {
+    room = new Room({
       roomId: uuidv4(),
       playerOneName: username,
       playerTwoName: "",
@@ -45,25 +45,36 @@ io.on("connection", (socket) => {
       time: 10,
     });
     await room.save();
-    const room2 = Room.findOne({ playerOneName: username });
-    console.log(room2);
+    cb(`Room ID : ${room.findOne(roomId).roomId}`);
   });
 
   //join game
-  socket.on("joinGame", async (username) => {});
+  socket.on("joinGame", async (username, roomId, cb) => {
+    const filter = { roomId };
+    const update = { playerTwoName: username };
+    await room.findOneAndUpdate(filter, update, {
+      new: true,
+    });
+    cb(`Joined Room ${roomId}`);
+  });
 
   socket.on("messageToServer", (message, roomId) => {
     socket.to(roomId).emit("messageToClient", message);
   });
 
-  socket.on("join-room", (room, cb) => {
-    socket.join(room);
-    cb(`Joined Room ${room}`);
-  });
+  // socket.on("join-room", (room, cb) => {
+  //   socket.join(room);
+  //   cb(`Joined Room ${room}`);
+  // });
 
   // pre-game
-  socket.on("shipsPosition", (user_name, pos) => {
+  socket.on("shipsPos", async (username, pos) => {
     console.log(pos);
+    const filter = { playerOneName: username };
+    const update = { playerOneShipPos: pos };
+    await room.findOneAndUpdate(filter, update, {
+      new: true,
+    });
   });
 
   socket.on("disconnect", () => {

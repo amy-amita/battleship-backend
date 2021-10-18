@@ -29,13 +29,23 @@ socket.on("connect", () => {
   console.log(socket.id);
 });
 
-let roomId = "aaa";
+// let roomId = "aaa";
 
-socket.emit("join-room", roomId, (message) => {
-  console.log(message);
+// socket.emit("join-room", roomId, (message) => {
+//   console.log(message);
+// });
+
+socket.emit("createGame", "amy", (cb) => {
+  console.log(cb);
 });
-
-socket.emit("createGame", "amy");
+socket.emit(
+  "joinGame",
+  "james",
+  "eb20c78d-250f-407c-841e-7c4bbd6df4ae",
+  (cb) => {
+    console.log(cb);
+  }
+);
 
 // socket.emit("messageToServer", (message, roomId) => {
 //   const input = prompt();
