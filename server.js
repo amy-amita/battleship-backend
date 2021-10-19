@@ -27,10 +27,10 @@ io.on("connection", (socket) => {
     //   socket.emit("messageToClient", 1); //USERNAME IS ALREADY TAKEN
     // }
   });
-  let room;
+
   // create game
   socket.on("createGame", async (username, cb) => {
-    room = new Room({
+    let room = new Room({
       roomId: uuidv4(),
       playerOneName: username,
       playerTwoName: "",
@@ -50,12 +50,16 @@ io.on("connection", (socket) => {
 
   //join game
   socket.on("joinGame", async (username, roomId, cb) => {
-    const filter = { roomId };
-    const update = { playerTwoName: username };
-    await Room.findOneAndUpdate(filter, update, {
-      new: true,
-    });
-    cb(`Joined Room ${roomId}`);
+    if (Room.findOne({ roomId }).playerTwoName === "") {
+      const filter = { roomId };
+      const update = { playerTwoName: username };
+      await Room.findOneAndUpdate(filter, update, {
+        new: true,
+      });
+      cb(`Joined Room ${roomId}`);
+    } else {
+      cb(`This room is full!`);
+    }
   });
 
   socket.on("messageToServer", (message, roomId) => {
