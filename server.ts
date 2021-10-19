@@ -5,9 +5,11 @@ import User from './models/userSchema'
 import Room from './models/roomSchema'
 
 //------------------------------------------- Connect to Database -------------------------------------------------//
+
 mongoose.connect(
     'mongodb+srv://testuser:battleship@cluster0.w9j5l.mongodb.net/battleship?retryWrites=true&w=majority'
 )
+
 //-----------------------------------------------------------------------------------------------------------------//
 
 const io = new Server(3031)
