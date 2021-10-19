@@ -53,6 +53,7 @@ io.on('connection', (socket) => {
         // cb(`Room ID : ${room.roomId}`)
     })
 
+
     //join game
     socket.on('joinGame', async (username: string, roomId: string, cb: any) => {
         if (Room.findOne({ roomId }).playerTwoName === '') {
@@ -65,6 +66,7 @@ io.on('connection', (socket) => {
         } else {
             cb(`This room is full!`)
         }
+
     })
 
     socket.on('messageToServer', (message: string, roomId: string) => {
