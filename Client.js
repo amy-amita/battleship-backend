@@ -41,7 +41,7 @@ socket.emit("createGame", "amy", (cb) => {
 socket.emit(
   "joinGame",
   "james",
-  "eb20c78d-250f-407c-841e-7c4bbd6df4ae",
+  "2278ed72-bef6-4b1f-94c9-d77f1d8a53d4",
   (cb) => {
     console.log(cb);
   }

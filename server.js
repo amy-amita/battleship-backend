@@ -45,14 +45,14 @@ io.on("connection", (socket) => {
       time: 10,
     });
     await room.save();
-    cb(`Room ID : ${room.findOne(roomId).roomId}`);
+    cb(`Room ID : ${room.roomId}`);
   });
 
   //join game
   socket.on("joinGame", async (username, roomId, cb) => {
     const filter = { roomId };
     const update = { playerTwoName: username };
-    await room.findOneAndUpdate(filter, update, {
+    await Room.findOneAndUpdate(filter, update, {
       new: true,
     });
     cb(`Joined Room ${roomId}`);
@@ -72,7 +72,7 @@ io.on("connection", (socket) => {
     console.log(pos);
     const filter = { playerOneName: username };
     const update = { playerOneShipPos: pos };
-    await room.findOneAndUpdate(filter, update, {
+    await Room.findOneAndUpdate(filter, update, {
       new: true,
     });
   });
