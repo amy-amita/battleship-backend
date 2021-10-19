@@ -18,7 +18,7 @@ io.on('connection', (socket) => {
     console.log(socket.id)
 
     // open page
-    socket.on('userData', async (username, avatarName) => {
+    socket.on('userData', async (username: string, avatarName: string) => {
         console.log(username)
         // const user = new User({ username, socketId: socket.id, avatarName });
         // const valid = await User.findOne({ username });
@@ -30,7 +30,7 @@ io.on('connection', (socket) => {
     })
 
     // create game
-    socket.on('createGame', async (username, cb) => {
+    socket.on('createGame', async (username: string, cb: string) => {
         const room = new Room({
             roomId: uuidv4(),
             playerOneName: username,
@@ -46,11 +46,11 @@ io.on('connection', (socket) => {
             time: 10,
         })
         await room.save()
-        cb(`Room ID : ${room.roomId}`)
+        // cb(`Room ID : ${room.roomId}`)
     })
 
     // join game
-    socket.on('joinGame', async (username: string, roomId: string, cb) => {
+    socket.on('joinGame', async (username: string, roomId: string, cb: any) => {
         const filter = { roomId }
         const update = { playerTwoName: username }
         const room = await Room.findOneAndUpdate(filter, update, {
