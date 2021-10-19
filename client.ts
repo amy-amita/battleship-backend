@@ -34,13 +34,13 @@ socket.on('connect', () => {
 //   console.log(message);
 // });
 
-socket.emit('createGame', 'amy', (cb: any) => {
+socket.emit('createGame', 'test1', (cb: any) => {
     console.log(cb)
 })
 socket.emit(
     'joinGame',
     'james',
-    'eb20c78d-250f-407c-841e-7c4bbd6df4ae',
+    '6394ba5c-1714-4b9c-8201-59044ec6b98f',
     (cb: any) => {
         console.log(cb)
     }
