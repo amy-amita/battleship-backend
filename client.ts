@@ -1,8 +1,7 @@
-const io = require("socket.io-client");
-const readline = require("readline");
-const { format } = require("path");
-const { SSL_OP_NO_TICKET } = require("constants");
-const prompt = require("prompt-sync")();
+import io from 'socket.io-client'
+import readline from 'readline'
+import { format } from 'path'
+import { SSL_OP_NO_TICKET } from 'constants'
 
 // const jsdom = require("jsdom");
 // const { JSDOM } = jsdom;
@@ -23,11 +22,11 @@ const prompt = require("prompt-sync")();
 //   messageInput.value = "";
 // })
 
-const socket = io("http://localhost:3031");
-console.log(typeof socket);
-socket.on("connect", () => {
-  console.log(socket.id);
-});
+const socket = io('http://localhost:3031')
+console.log(typeof socket)
+socket.on('connect', () => {
+    console.log(socket.id)
+})
 
 // let roomId = "aaa";
 
@@ -35,17 +34,17 @@ socket.on("connect", () => {
 //   console.log(message);
 // });
 
-socket.emit("createGame", "amy", (cb) => {
-  console.log(cb);
-});
+socket.emit('createGame', 'amy', (cb: any) => {
+    console.log(cb)
+})
 socket.emit(
-  "joinGame",
-  "james",
-  "eb20c78d-250f-407c-841e-7c4bbd6df4ae",
-  (cb) => {
-    console.log(cb);
-  }
-);
+    'joinGame',
+    'james',
+    'eb20c78d-250f-407c-841e-7c4bbd6df4ae',
+    (cb: any) => {
+        console.log(cb)
+    }
+)
 
 // socket.emit("messageToServer", (message, roomId) => {
 //   const input = prompt();
