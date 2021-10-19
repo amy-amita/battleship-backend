@@ -8,10 +8,12 @@ const roomSchema = new mongoose.Schema({
     playerTwoCurrentScore: Number,
     playerOneGameWin: Number,
     playerTwoGameWin: Number,
-    playerOneShipPos: Array,
-    playerOneTwoPos: Array,
-    playerOneHitMissPos: Array,
-    playerTwoHitMissPos: Array,
+    playerOneShipPos: String,
+    playerTwoShipPos: String,
+    playerOneHitPos: String,
+    playerTwoHitPos: String,
+    playerOneMissPos: String,
+    playerTwoMissPos: String,
     time: Number,
 })
 

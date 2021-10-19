@@ -28,23 +28,21 @@ socket.on('connect', () => {
     console.log(socket.id)
 })
 
-// let roomId = "aaa";
 
-// socket.emit("join-room", roomId, (message) => {
-//   console.log(message);
-// });
+// socket.emit('createGame', 'pump', (cb: any) => {
+//     console.log(cb)
+// })
 
-socket.emit('createGame', 'test1', (cb: any) => {
-    console.log(cb)
-})
-socket.emit(
-    'joinGame',
-    'james',
-    '6394ba5c-1714-4b9c-8201-59044ec6b98f',
-    (cb: any) => {
-        console.log(cb)
-    }
-)
+// socket.emit(
+//     'joinGame',
+//     'james',
+//     '155a971d-e088-4136-b4b6-61676c7c3042',
+//     (cb: any) => {
+//         console.log(cb)
+//     }
+// )
+
+socket.emit('ready', 'pump', '00010203040506071020304050607080')
 
 // socket.emit("messageToServer", (message, roomId) => {
 //   const input = prompt();
