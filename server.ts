@@ -3,6 +3,7 @@ import { Server } from 'socket.io'
 import mongoose from 'mongoose'
 import User from './models/userSchema'
 import Room from './models/roomSchema'
+import { isNull } from 'util'
 
 //------------------------------------------- Connect to Database -------------------------------------------------//
 
@@ -23,7 +24,7 @@ io.on('connection', (socket) => {
         console.log(username)
         const user = new User({ username, socketId: socket.id, avatarName })
         const valid = await User.findOne({ username })
-        if (!valid) {
+        if (valid == null) {
             await user.save()
             socket.emit('checkUsername', checkUsername, username)
         } else {
@@ -69,11 +70,6 @@ io.on('connection', (socket) => {
     socket.on('messageToServer', (message: string, roomId: string) => {
         socket.to(roomId).emit('messageToClient', message)
     })
-
-    // socket.on("join-room", (room, cb) => {
-    //   socket.join(room);
-    //   cb(`Joined Room ${room}`);
-    // });
 
     // pre-game
     socket.on('shipsPos', async (username: string, pos: string) => {
