@@ -49,22 +49,24 @@ io.on('connection', (socket) => {
             playerTwoHitMissPos: [],
             time: 10,
         })
-        await room.save()
+        // await room.save()
         // cb(`Room ID : ${room.roomId}`)
     })
 
 
     //join game
     socket.on('joinGame', async (username: string, roomId: string, cb: any) => {
-        if (Room.findOne({ roomId }).playerTwoName === '') {
+        const room = await Room.findOne({ roomId });
+        console.log(room.playerOneName);
+        if (room.playerTwoName === "") {
             const filter = { roomId }
             const update = { playerTwoName: username }
             await Room.findOneAndUpdate(filter, update, {
                 new: true,
             })
-            cb(roomId)
+            cb(`Joined ${roomId}`);
         } else {
-            cb(`This room is full!`)
+            cb(`This room is full!`);
         }
 
     })
