@@ -43,13 +43,15 @@ io.on('connection', (socket) => {
             playerTwoCurrentScore: 0,
             playerOneGameWin: 0,
             playerTwoGameWin: 0,
-            playerOneShipPos: [],
-            playerTwoShipPos: [],
-            playerOneHitMissPos: [],
-            playerTwoHitMissPos: [],
+            playerOneShipPos: "",
+            playerTwoShipPos: "",
+            playerOneHitPos: "",
+            playerTwoHitPos: "",
+            playerOneMissPos: "",
+            playerTwoMissPos: "",
             time: 10,
         })
-        // await room.save()
+        await room.save()
         // cb(`Room ID : ${room.roomId}`)
     })
 
@@ -57,32 +59,73 @@ io.on('connection', (socket) => {
     //join game
     socket.on('joinGame', async (username: string, roomId: string, cb: any) => {
         const room = await Room.findOne({ roomId });
-        console.log(room.playerOneName);
-        if (room.playerTwoName === "") {
-            const filter = { roomId }
-            const update = { playerTwoName: username }
-            await Room.findOneAndUpdate(filter, update, {
-                new: true,
-            })
-            cb(`Joined ${roomId}`);
-        } else {
-            cb(`This room is full!`);
+        if(room){
+            console.log(room.playerOneName);
+            if (room.playerTwoName === "") {
+                const filter = { roomId }
+                const update = { playerTwoName: username }
+                await Room.findOneAndUpdate(filter, update, {
+                    new: true,
+                })
+                cb(`Joined ${roomId}`);
+            } else {
+                cb(`This room is full!`);
+            }
         }
-
-    })
-
-    socket.on('messageToServer', (message: string, roomId: string) => {
-        socket.to(roomId).emit('messageToClient', message)
     })
 
     // pre-game
-    socket.on('shipsPos', async (username: string, pos: string) => {
-        console.log(pos)
-        const filter = { playerOneName: username }
-        const update = { playerOneShipPos: pos }
-        await Room.findOneAndUpdate(filter, update, {
-            new: true,
-        })
+    socket.on('ready', async (
+        // roomId: string, 
+        username: string, pos: string) => {
+        //const room = await Room.findOne({ roomId });
+        let room = await Room.findOne({ playerOneName: 'pump'});
+        if(room){
+            if(room.playerOneName === username){
+                const update = { playerOneShipPos: pos };
+                // Room.findOneAndUpdate({ roomId }, update, {
+                //     new: true,
+                // })
+                await Room.findOneAndUpdate({ playerOneName: 'pump' }, update, {
+                    new: true,
+                })
+                socket.emit('ready', username);
+            }else if(room.playerTwoName === username){
+                const update = { playerTwoShipPos: pos }
+                // Room.findOneAndUpdate({ roomId }, update, {
+                //     new: true,
+                // })
+                await Room.findOneAndUpdate({ playerOneName: 'pump' }, update, {
+                    new: true,
+                })
+                socket.emit('ready', username);
+            }else{
+                socket.emit('ready', `${username} is not in this room!`);
+            }
+        }
+    });
+
+    socket.on('attack', async(
+        // roomId: string, 
+        username: string, shootPos: string) => {
+        // const room = await Room.findOne({ roomId });
+        let room = await Room.findOne({ playerOneName: 'pump'});
+        if(room){
+            if(room.playerOneName === username){
+                if(room.playerTwoShipPos.includes(shootPos)){
+                    socket.emit('attack', 'Hit', shootPos);
+                }else{
+                    socket.emit('attack', 'Missed', shootPos);
+                }
+            }
+            if(room.playerTwoName === username){
+                if(room.playerOneShipPos.includes(shootPos)){
+                    socket.emit('attack', 'Hit', shootPos);
+                }else{
+                    socket.emit('attack', 'Missed', shootPos);
+                }
+            }
+        }
     })
 
     socket.on('disconnect', () => {
