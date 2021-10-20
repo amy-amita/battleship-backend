@@ -53,12 +53,22 @@ socket.on('connect', () => {
 // });
 
 //attack w/ roomId
-socket.emit(
-    'attack',
-    '2a4de412-2f51-4fcf-88e7-09d83abe3a12',
-    'james',
-    '11',
-    (cb: any) => {
-        console.log(cb)
-    }
-)
+// socket.emit(
+//     'attack',
+//     '2a4de412-2f51-4fcf-88e7-09d83abe3a12',
+//     'james',
+//     '11',
+//     (cb: any) => {
+//         console.log(cb)
+//     }
+// )
+
+socket.emit('findRoom')
+
+socket.on('findRoom', (rooms) => {
+    console.log(rooms)
+})
+
+socket.on('onlineNum', (count) => {
+    console.log(`Player Online: ${count}`)
+})

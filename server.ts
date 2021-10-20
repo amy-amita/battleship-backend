@@ -83,6 +83,13 @@ io.on('connection', (socket) => {
         }
     )
 
+    socket.on('findRoom', async () => {
+        const count = await io.engine.clientsCount
+        socket.emit('onlineNum', count)
+        let rooms = await Room.find()
+        socket.emit('findRoom', rooms)
+    })
+
     // pre-game w/ username
     socket.on(
         'ready',
