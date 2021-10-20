@@ -2,18 +2,12 @@ import mongoose from 'mongoose'
 
 const roomSchema = new mongoose.Schema({
     roomId: String,
-    playerOneName: String,
-    playerTwoName: String,
-    playerOneCurrentScore: Number,
-    playerTwoCurrentScore: Number,
-    playerOneGameWin: Number,
-    playerTwoGameWin: Number,
-    playerOneShipPos: String,
-    playerTwoShipPos: String,
-    playerOneHitPos: String,
-    playerTwoHitPos: String,
-    playerOneMissPos: String,
-    playerTwoMissPos: String,
+    pName: {'p1': String, 'p2': String},
+    pScore: {'p1': Number, 'p2': Number},
+    pWinRound: {'p1': Number, 'p2': Number},
+    pShipPos: {'p1': String, 'p2': String},
+    pHitPos: {'p1': String, 'p2': String},
+    pMissPos:{'p1': String, 'p2': String},
     time: Number,
 })
 

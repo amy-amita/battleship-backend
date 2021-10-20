@@ -23,27 +23,36 @@ import { SSL_OP_NO_TICKET } from 'constants'
 // })
 
 const socket = io('http://localhost:3031')
-console.log(typeof socket)
 socket.on('connect', () => {
     console.log(socket.id)
 })
 
-
-// socket.emit('createGame', 'pump', (cb: any) => {
+//create game
+// socket.emit('createGame', 'test001', (cb: any) => {
 //     console.log(cb)
-// })
+// });
 
-// socket.emit(
-//     'joinGame',
-//     'james',
-//     '155a971d-e088-4136-b4b6-61676c7c3042',
-//     (cb: any) => {
-//         console.log(cb)
-//     }
-// )
+//join game
+// socket.emit('joinGame', '2a4de412-2f51-4fcf-88e7-09d83abe3a12', 'james', (cb: any) => {
+//     console.log(cb)
+// });
 
-socket.emit('ready', 'pump', '00010203040506071020304050607080')
+// //ready w/ username
+// socket.emit('ready', 'test001', '30,20,10,00,73,63,53,43,04,14,24,34,02,12,22,32', (cb: any) => {
+//     console.log(cb)
+// });
 
-// socket.emit("messageToServer", (message, roomId) => {
-//   const input = prompt();
-// })
+// //ready w/ roomId
+// socket.emit('ready', '2a4de412-2f51-4fcf-88e7-09d83abe3a12', 'james', '30,20,10,00,73,63,53,43,04,14,24,34,02,12,22,32', (cb: any) => {
+//     console.log(cb)
+// });
+
+// //attack w/ username
+// socket.emit('attack', 'test001', '33', (cb: any) => {
+//     console.log(cb)
+// });
+
+//attack w/ roomId
+socket.emit('attack', '2a4de412-2f51-4fcf-88e7-09d83abe3a12', 'james', '11', (cb: any) => {
+    console.log(cb)
+});
