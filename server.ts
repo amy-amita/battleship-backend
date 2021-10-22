@@ -41,7 +41,7 @@ io.on('connection', (socket) => {
         ) => {
             const room = new Room({
                 roomId: uuidv4(),
-                pSocket: {p1: socket, p2: ''},
+                pSocket: { p1: socket, p2: '' },
                 pName: { p1: username, p2: '' },
                 pScore: { p1: 0, p2: 0 },
                 pWinRound: { p1: 0, p2: 0 },
@@ -49,7 +49,7 @@ io.on('connection', (socket) => {
                 pHitPos: { p1: '', p2: '' },
                 pMissPos: { p1: '', p2: '' },
                 time: 10,
-                playerReady:{p1: '0', p2: '0'},     //0 = not ready, 1 = ready
+                playerReady: { p1: '0', p2: '0' }, //0 = not ready, 1 = ready
                 currentTurn: '',
             })
             await room.save()
@@ -92,7 +92,7 @@ io.on('connection', (socket) => {
         let rooms = await Room.find()
         socket.emit('findRoom', rooms)
     })
-  
+
     // pre-game w/ roomId
     socket.on(
         'ready',
@@ -106,10 +106,16 @@ io.on('connection', (socket) => {
             if (room) {
                 let update
                 if (room.pName.p1 === username) {
-                    update = [{ 'pShipPos.p1': shipPos }, {'playerReady.p1': 1}];
+                    update = [
+                        { 'pShipPos.p1': shipPos },
+                        { 'playerReady.p1': 1 },
+                    ]
                     socket.emit('ready', room.pName.p2)
                 } else if (room.pName.p2 === username) {
-                    update = [{ 'pShipPos.p2': shipPos }, {'playerReady.p2': 1}]
+                    update = [
+                        { 'pShipPos.p2': shipPos },
+                        { 'playerReady.p2': 1 },
+                    ]
                     socket.emit('ready', room.pName.p1)
                 }
                 await Room.updateMany({ roomId }, update, {
@@ -122,22 +128,22 @@ io.on('connection', (socket) => {
         }
     )
 
-    socket.on('checkReady', async(roomId: String) => {
+    socket.on('checkReady', async (roomId: String) => {
         const room = await Room.findOne({ roomId })
-        if(room.playerReady.p1 === 1 && room.playerReady.p2 === 1){
-            let update;
-            if(Math.floor(Math.random() * 2) === 0){
+        if (room.playerReady.p1 === 1 && room.playerReady.p2 === 1) {
+            let update
+            if (Math.floor(Math.random() * 2) === 0) {
                 update = { 'currentTurn.p1': 1 }
                 socket.emit('checkReady', 'player1')
-            }else{
+            } else {
                 update = { 'currentTurn.p1': 1 }
-                socket.emit('checkReady', 'player2');
+                socket.emit('checkReady', 'player2')
             }
             await Room.findOneAndUpdate(roomId, update, {
                 new: true,
             })
-        }else{
-            socket.emit('checkReady', 'Player is not ready');
+        } else {
+            socket.emit('checkReady', 'Player is not ready')
         }
     })
 
@@ -154,9 +160,18 @@ io.on('connection', (socket) => {
             if (room) {
                 let update
                 if (room.pName.p1 === username) {
+                    let anotherPlayer = await Room.findOne({
+                        username: room.pName.p2,
+                    })
+                    let anotherSocketId = anotherPlayer.socketId
+                    let selfSocketId = await Room.findOne({ username }).socketId
                     if (room.pShipPos.p2.includes(shootPos)) {
                         update = { 'pHitPos.p1': room.pHitPos.p1 + shootPos }
-                        socket.emit('attack', 'Hit', shootPos)
+                        socket
+                            .to(anotherSocketId)
+                            .emit('private message', socket.id)
+                        socket.to(selfSocketId).emit('attack', 'Hit', shootPos)
+                        socket.to(anotherSocketId).emit('attack', 'Hit')
                         // cb(`Hit!`)
                     } else {
                         update = { 'pMissPos.p1': room.pMissPos.p1 + shootPos }
@@ -164,6 +179,9 @@ io.on('connection', (socket) => {
                         // cb(`Missed`)
                     }
                 } else if (room.pName.p2 === username) {
+                    let anotherSocketId = await Room.findOne({
+                        username: room.pName.p1,
+                    }).socketId
                     if (room.pShipPos.p1.includes(shootPos)) {
                         update = { 'pHitPos.p2': room.pHitPos.p2 + shootPos }
                         socket.emit('attack', 'Hit', shootPos)
