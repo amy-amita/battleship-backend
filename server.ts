@@ -48,7 +48,7 @@ io.on('connection', (socket) => {
                 pShipPos: { p1: '', p2: '' },
                 pHitPos: { p1: '', p2: '' },
                 pMissPos: { p1: '', p2: '' },
-                playerReady: { p1: false, p2: false }, //0 = not ready, 1 = ready
+                pReady: { p1: false, p2: false },
                 nextTurn: '',
             })
             await room.save()
@@ -71,7 +71,7 @@ io.on('connection', (socket) => {
                 // console.log(room.pName.p1);
                 if (room.pName.p2 === '') {
                     const filter = { roomId }
-                    const update = { 'pName.p2': username }
+                    const update = { 'pName.p2': username, pSocket: socket.id }
                     await Room.updateOne(filter, update)
                     // cb(`Joined ${roomId}`)
                 } else {
@@ -103,16 +103,10 @@ io.on('connection', (socket) => {
             if (room) {
                 let update
                 if (room.pName.p1 === username) {
-                    update = [
-                        { 'pShipPos.p1': shipPos },
-                        { 'playerReady.p1': true },
-                    ]
+                    update = { 'pShipPos.p1': shipPos, 'pReady.p1': true }
                     socket.emit('ready', room.pName.p2)
                 } else if (room.pName.p2 === username) {
-                    update = [
-                        { 'pShipPos.p2': shipPos },
-                        { 'playerReady.p2': true },
-                    ]
+                    update = { 'pShipPos.p2': shipPos, 'pReady.p2': true }
                     socket.emit('ready', room.pName.p1)
                 }
                 await Room.updateOne({ roomId }, update)
@@ -121,7 +115,7 @@ io.on('connection', (socket) => {
                 socket.emit('Room does not exist (ready)')
             }
             room = await Room.findOne({ roomId })
-            if (room.playerReady.p1 === true && room.playerReady.p2 === true) {
+            if (room.pReady.p1 === true && room.pReady.p2 === true) {
                 let update
                 if (room.pWinRound.p1 === 0 && room.pWinRound.p2 === 0) {
                     if (Math.floor(Math.random() * 2) === 0) {
