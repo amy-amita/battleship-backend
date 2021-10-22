@@ -55,11 +55,7 @@ io.on('connection', (socket) => {
     )
 
     //join game
-    socket.on(
-        'joinGame',
-        async (
-            roomId: string,
-            username: string
+    socket.on('joinGame', async (roomId: string, username: string
             // cb: any
         ) => {
             const room = await Room.findOne({ roomId })
