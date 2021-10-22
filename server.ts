@@ -167,7 +167,9 @@ io.on('connection', (socket) => {
                     if (room.pShipPos.p2.includes(shootPos)) {
                         update = { 'pHitPos.p1': room.pHitPos.p1 + shootPos }
                         socket.to(selfSocketId).emit('attack', 'Hit', shootPos)
-                        socket.to(otherSocketId).emit('attack', 'Hit', shootPos)
+                        socket
+                            .to(otherSocketId)
+                            .emit('attacked', 'Hit', shootPos)
                         // cb(`Hit!`)
                     } else {
                         update = { 'pMissPos.p1': room.pMissPos.p1 + shootPos }
@@ -176,7 +178,7 @@ io.on('connection', (socket) => {
                             .emit('attack', 'Missed', shootPos)
                         socket
                             .to(otherSocketId)
-                            .emit('attack', 'Missed', shootPos)
+                            .emit('attacked', 'Missed', shootPos)
                         // cb(`Missed`)
                     }
                 } else if (room.pName.p2 === username) {
@@ -186,7 +188,9 @@ io.on('connection', (socket) => {
                     if (room.pShipPos.p1.includes(shootPos)) {
                         update = { 'pHitPos.p2': room.pHitPos.p2 + shootPos }
                         socket.to(selfSocketId).emit('attack', 'Hit', shootPos)
-                        socket.to(otherSocketId).emit('attack', 'Hit', shootPos)
+                        socket
+                            .to(otherSocketId)
+                            .emit('attacked', 'Hit', shootPos)
                         // cb(`Hit!`)
                     } else {
                         update = { 'pMissPos.p2': room.pMissPos.p2 + shootPos }
@@ -195,7 +199,7 @@ io.on('connection', (socket) => {
                             .emit('attack', 'Missed', shootPos)
                         socket
                             .to(otherSocketId)
-                            .emit('attack', 'Missed', shootPos)
+                            .emit('attacked', 'Missed', shootPos)
                         // cb(`Missed`)
                     }
                 }
