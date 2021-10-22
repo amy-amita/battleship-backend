@@ -28,7 +28,7 @@ io.on('connection', (socket) => {
             socket.emit('checkUsername', checkUsername, username)
         } else {
             checkUsername = false
-            socket.emit('checkUsername', checkUsername, username) //USERNAME IS ALREADY TAKEN
+            socket.emit('checkUsername', checkUsername, username)
         }
     })
 
@@ -41,6 +41,7 @@ io.on('connection', (socket) => {
         ) => {
             const room = new Room({
                 roomId: uuidv4(),
+                pSocket: {p1: socket, p2: ''},
                 pName: { p1: username, p2: '' },
                 pScore: { p1: 0, p2: 0 },
                 pWinRound: { p1: 0, p2: 0 },
@@ -48,10 +49,12 @@ io.on('connection', (socket) => {
                 pHitPos: { p1: '', p2: '' },
                 pMissPos: { p1: '', p2: '' },
                 time: 10,
+                playerReady:{p1: '0', p2: '0'},     //0 = not ready, 1 = ready
+                currentTurn: '',
             })
             await room.save()
-            const tmp = await Room.findOne({ 'pName.p1': username })
-            console.log(tmp)
+            // const tmp = await Room.findOne({ 'pName.p1': username })
+            // console.log(tmp)
             // cb(`Room ID : ${room.roomId}`)
         }
     )
@@ -83,47 +86,6 @@ io.on('connection', (socket) => {
         }
     )
 
-    // pre-game w/ username
-    socket.on(
-        'ready',
-        async (
-            username: string,
-            shipPos: string
-            // cb: any
-        ) => {
-            let room = await Room.findOne({ 'pName.p1': username })
-            if (room === null) {
-                room = await Room.findOne({ 'pName.p2': username })
-            }
-            if (room) {
-                if (room.pName.p1 === username) {
-                    const update = { 'pShipPos.p1': shipPos }
-                    await Room.findOneAndUpdate(
-                        { 'pName.p1': username },
-                        update,
-                        {
-                            new: true,
-                        }
-                    )
-                    socket.emit('ready', room.pName.p2)
-                } else if (room.pName.p2 === username) {
-                    const update = { 'pShipPos.p2': shipPos }
-                    await Room.findOneAndUpdate(
-                        { 'pName.p2': username },
-                        update,
-                        {
-                            new: true,
-                        }
-                    )
-                    socket.emit('ready', room.pName.p1)
-                }
-                // cb(`${username} is ready`)
-            } else {
-                socket.emit('Room does not exist (ready)')
-            }
-        }
-    )
-
     // pre-game w/ roomId
     socket.on(
         'ready',
@@ -137,13 +99,13 @@ io.on('connection', (socket) => {
             if (room) {
                 let update
                 if (room.pName.p1 === username) {
-                    update = { 'pShipPos.p1': shipPos }
+                    update = [{ 'pShipPos.p1': shipPos }, {'playerReady.p1': 1}];
                     socket.emit('ready', room.pName.p2)
                 } else if (room.pName.p2 === username) {
-                    update = { 'pShipPos.p2': shipPos }
+                    update = [{ 'pShipPos.p2': shipPos }, {'playerReady.p2': 1}]
                     socket.emit('ready', room.pName.p1)
                 }
-                await Room.findOneAndUpdate({ roomId }, update, {
+                await Room.updateMany({ roomId }, update, {
                     new: true,
                 })
                 // cb(`${username} is ready`);
@@ -153,60 +115,24 @@ io.on('connection', (socket) => {
         }
     )
 
-    //attack phase w/ username
-    socket.on(
-        'attack',
-        async (
-            username: string,
-            shootPos: string
-            // cb: any
-        ) => {
-            let room = await Room.findOne({ 'pName.p1': username })
-            if (room === null) {
-                room = await Room.findOne({ 'pName.p2': username })
+    socket.on('checkReady', async(roomId: String) => {
+        const room = await Room.findOne({ roomId })
+        if(room.playerReady.p1 === 1 && room.playerReady.p2 === 1){
+            let update;
+            if(Math.floor(Math.random() * 2) === 0){
+                update = { 'currentTurn.p1': 1 }
+                socket.emit('checkReady', 'player1')
+            }else{
+                update = { 'currentTurn.p1': 1 }
+                socket.emit('checkReady', 'player2');
             }
-            if (room) {
-                let update
-                if (room.pName.p1 === username) {
-                    if (room.pShipPos.p2.includes(shootPos)) {
-                        update = { 'pHitPos.p1': room.pHitPos.p1 + shootPos }
-                        socket.emit('attack', 'Hit', shootPos)
-                        // cb(`Hit!`);
-                    } else {
-                        update = { 'pMissPos.p1': room.pMissPos.p1 + shootPos }
-                        socket.emit('attack', 'Missed', shootPos)
-                        // cb(`Missed`);
-                    }
-                    await Room.findOneAndUpdate(
-                        { 'pName.p1': username },
-                        update,
-                        {
-                            new: true,
-                        }
-                    )
-                } else if (room.pName.p2 === username) {
-                    if (room.pShipPos.p1.includes(shootPos)) {
-                        update = { 'pHitPos.p2': room.pHitPos.p2 + shootPos }
-                        socket.emit('attack', 'Hit', shootPos)
-                        // cb(`Hit!`);
-                    } else {
-                        update = { 'pMissPos.p2': room.pMissPos.p2 + shootPos }
-                        socket.emit('attack', 'Missed', shootPos)
-                        // cb(`Missed`);
-                    }
-                    await Room.findOneAndUpdate(
-                        { 'pName.p2': username },
-                        update,
-                        {
-                            new: true,
-                        }
-                    )
-                }
-            } else {
-                socket.emit('Room does not exist (attack)')
-            }
+            await Room.findOneAndUpdate(roomId, update, {
+                new: true,
+            })
+        }else{
+            socket.emit('checkReady', 'Player is not ready');
         }
-    )
+    })
 
     //attack phase w/ roomId
     socket.on(
