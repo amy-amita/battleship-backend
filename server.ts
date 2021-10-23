@@ -67,13 +67,16 @@ io.on('connection', (socket) => {
                 // console.log(room.pName.p1);
                 if (room.pName.p2 === '') {
                     const filter = { roomId }
-                    const update = { 'pName.p2': username, pSocket: socket.id }
+                    const update = { 'pName.p2': username, 'pSocket.p2': socket.id }
                     await Room.updateOne(filter, update)
+                    console.log(`Joined ${roomId}`);
                     // cb(`Joined ${roomId}`)
                 } else {
+                    console.log('This room is full!');
                     // cb(`This room is full!`)
                 }
             } else {
+                console.log('Room does not exist (join)');
                 // cb('Room does not exist (join)')
             }
         }
@@ -104,25 +107,25 @@ io.on('connection', (socket) => {
                 socket.emit('Room does not exist (ready)')
             }
             
-            room = await Room.findOne({ roomId })
+            room = await Room.findOne({ roomId });
             if (room.pReady.p1 === true && room.pReady.p2 === true) {
                 let update
                 if (room.pWinRound.p1 === 0 && room.pWinRound.p2 === 0) {
                     if (Math.floor(Math.random() * 2) === 0) {
                         update = { nextTurn: 1 }
-                        socket.to(room.pSocket.p1).to(room.pSocket.p2).emit('checkReady', room.pName.p1)
+                        io.to(room.pSocket.p1).to(room.pSocket.p2).emit('checkReady', room.pName.p1)
                     } else {
                         update = { nextTurn: 2 }
-                        socket.to(room.pSocket.p1).to(room.pSocket.p2).emit('checkReady', room.pName.p2)
+                        io.to(room.pSocket.p1).to(room.pSocket.p2).emit('checkReady', room.pName.p2)
                     }
                     await Room.updateOne({ roomId }, update)
                 } else {
                     if (room.lastWinner === room.pName.p1) {
                         update = { nextTurn: 1 }
-                        socket.to(room.pSocket.p1).to(room.pSocket.p2).emit('checkReady', room.pName.p1)
+                        io.to(room.pSocket.p1).to(room.pSocket.p2).emit('checkReady', room.pName.p1)
                     } else {
                         update = { nextTurn: 2 }
-                        socket.to(room.pSocket.p1).to(room.pSocket.p2).emit('checkReady', room.pName.p2)
+                        io.to(room.pSocket.p1).to(room.pSocket.p2).emit('checkReady', room.pName.p2)
                     }
                 }
                 await Room.updateOne({ roomId }, update)
@@ -140,19 +143,13 @@ io.on('connection', (socket) => {
                     const selfSocketId = room.pSocket.p1
                     const otherSocketId = room.pSocket.p2
                     if (room.pShipPos.p2.includes(shootPos)) {
-                        socket.to(selfSocketId).emit('attack', 'Hit', shootPos)
-                        socket
-                            .to(otherSocketId)
-                            .emit('attacked', 'Hit', shootPos)
+                        io.to(selfSocketId).emit('attack', 'Hit', shootPos)
+                        io.to(otherSocketId).emit('attacked', 'Hit', shootPos)
                         // cb(`Hit!`)
                         await room.updateOne({ nextTurn: room.pSocket.p1, 'pHitPos.p1': room.pHitPos.p1 + shootPos })
                     } else {
-                        socket
-                            .to(selfSocketId)
-                            .emit('attack', 'Missed', shootPos)
-                        socket
-                            .to(otherSocketId)
-                            .emit('attacked', 'Missed', shootPos)
+                        io.to(selfSocketId).emit('attack', 'Missed', shootPos)
+                        io.to(otherSocketId).emit('attacked', 'Missed', shootPos)
                         // cb(`Missed`)
                         await room.updateOne({ nextTurn: room.pSocket.p2, 'pMissPos.p1': room.pMissPos.p1 + shootPos })
                     }
@@ -160,19 +157,13 @@ io.on('connection', (socket) => {
                     const selfSocketId = room.pSocket.p2
                     const otherSocketId = room.pSocket.p1
                     if (room.pShipPos.p1.includes(shootPos)) {
-                        socket.to(selfSocketId).emit('attack', 'Hit', shootPos)
-                        socket
-                            .to(otherSocketId)
-                            .emit('attacked', 'Hit', shootPos)
+                        io.to(selfSocketId).emit('attack', 'Hit', shootPos)
+                        io.to(otherSocketId).emit('attacked', 'Hit', shootPos)
                         // cb(`Hit!`)
                         await room.updateOne({ nextTurn: room.pSocket.p2, 'pHitPos.p2': room.pHitPos.p2 + shootPos })
                     } else {
-                        socket
-                            .to(selfSocketId)
-                            .emit('attack', 'Missed', shootPos)
-                        socket
-                            .to(otherSocketId)
-                            .emit('attacked', 'Missed', shootPos)
+                        io.to(selfSocketId).emit('attack', 'Missed', shootPos)
+                        io.to(otherSocketId).emit('attacked', 'Missed', shootPos)
                         // cb(`Missed`)
                         await room.updateOne({ nextTurn: room.pSocket.p1, 'pMissPos.p2': room.pMissPos.p2 + shootPos })
                     } 
@@ -182,6 +173,13 @@ io.on('connection', (socket) => {
             }
         }
     )
+
+    socket.on('chat', async (roomId: String, message:String) => {
+        const room = await Room.findOne({ roomId })
+        const arr = message.split(' ');
+        
+        socket.to(room.pName.p1).to(room.pSocket.p2).emit('chat', message);
+    });
 
     socket.on('disconnect', () => {
         console.log('Disconnected!')

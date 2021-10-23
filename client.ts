@@ -38,15 +38,15 @@ socket.on('connect', () => {
 //     });
 
 // //ready w/ roomId
-// socket.emit('ready', 'a4f1e5bf-8dbf-474e-b912-ebfb15a07978', 'test001', '30,20,10,00,73,63,53,43,04,14,24,34,02,12,22,32', (cb: any) => {
+// socket.emit('ready', '8371c2f7-e1df-4938-927a-e901500037e7', 'test001', '30,20,10,00,73,63,53,43,04,14,24,34,02,12,22,32', (cb: any) => {
 //     console.log(cb)
 // });
 
 // //attack w/ roomId
-// socket.emit('attack', '2a4de412-2f51-4fcf-88e7-09d83abe3a12', 'james', '11',
-//     (cb: any) => {
-//         console.log(cb)
-// })
+socket.emit('attack', '8371c2f7-e1df-4938-927a-e901500037e7', 'test001', '77',
+    (cb: any) => {
+        console.log(cb)
+})
 
 // // socket.emit('findRoom')
 // socket.on('findRoom', (rooms) => {
