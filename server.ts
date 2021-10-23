@@ -188,18 +188,24 @@ io.on('connection', (socket) => {
                         io.to(selfSocketId).emit('attack', 'Hit', shootPos, room.pName.p1)
                         io.to(otherSocketId).emit('attacked', 'Hit', shootPos, room.pName.p1)
                         // cb(`Hit!`)
-                        await room.updateOne({
-                            nextTurn: room.pName.p1,
-                            'pHitPos.p1': room.pHitPos.p1 + shootPos,
-                        })
+                        await Room.updateOne(
+                            { roomId },
+                            {
+                                nextTurn: room.pName.p1,
+                                'pHitPos.p1': room.pHitPos.p1 + shootPos,
+                            }
+                        )
                     } else {
                         io.to(selfSocketId).emit('attack', 'Missed', shootPos, room.pName.p2)
                         io.to(otherSocketId).emit('attacked', 'Missed', shootPos, room.pName.p2)
                         // cb(`Missed`)
-                        await room.updateOne({
-                            nextTurn: room.pName.p2,
-                            'pMissPos.p1': room.pMissPos.p1 + shootPos,
-                        })
+                        await Room.updateOne(
+                            { roomId },
+                            {
+                                nextTurn: room.pName.p2,
+                                'pMissPos.p1': room.pMissPos.p1 + shootPos,
+                            }
+                        )
                     }
                     timeOutId = setTimeout(
                         () => io.to(room.pSocket.p1).to(room.pSocket.p2).emit('timeOut', room.pName.p1),
@@ -212,18 +218,24 @@ io.on('connection', (socket) => {
                         io.to(selfSocketId).emit('attack', 'Hit', shootPos, room.pName.p2)
                         io.to(otherSocketId).emit('attacked', 'Hit', shootPos, room.pName.p2)
                         // cb(`Hit!`)
-                        await room.updateOne({
-                            nextTurn: room.pName.p2,
-                            'pHitPos.p2': room.pHitPos.p2 + shootPos,
-                        })
+                        await Room.updateOne(
+                            { roomId },
+                            {
+                                nextTurn: room.pName.p2,
+                                'pHitPos.p2': room.pHitPos.p2 + shootPos,
+                            }
+                        )
                     } else {
                         io.to(selfSocketId).emit('attack', 'Missed', shootPos, room.pName.p1)
                         io.to(otherSocketId).emit('attacked', 'Missed', shootPos, room.pName.p1)
                         // cb(`Missed`)
-                        await room.updateOne({
-                            nextTurn: room.pName.p1,
-                            'pMissPos.p2': room.pMissPos.p2 + shootPos,
-                        })
+                        await Room.updateOne(
+                            { roomId },
+                            {
+                                nextTurn: room.pName.p1,
+                                'pMissPos.p2': room.pMissPos.p2 + shootPos,
+                            }
+                        )
                     }
                     timeOutId = setTimeout(
                         () => io.to(room.pSocket.p1).to(room.pSocket.p2).emit('timeOut', room.pName.p2),
