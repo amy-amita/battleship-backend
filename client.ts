@@ -22,7 +22,7 @@ import io from 'socket.io-client'
 
 
 
-const socket = io('https://1dba-49-228-164-20.ngrok.io')
+const socket = io('http://localhost:3031')
 socket.on('connect', () => {
     console.log(socket.id)
 });
@@ -43,10 +43,10 @@ socket.on('connect', () => {
 // });
 
 // //attack w/ roomId
-socket.emit('attack', '8371c2f7-e1df-4938-927a-e901500037e7', 'test001', '77',
-    (cb: any) => {
-        console.log(cb)
-})
+// socket.emit('attack', '8371c2f7-e1df-4938-927a-e901500037e7', 'test001', '77',
+//     (cb: any) => {
+//         console.log(cb)
+// })
 
 // // socket.emit('findRoom')
 // socket.on('findRoom', (rooms) => {
@@ -57,4 +57,11 @@ socket.emit('attack', '8371c2f7-e1df-4938-927a-e901500037e7', 'test001', '77',
 // socket.on('onlineNum', (count) => {
 //     console.log(`Player Online: ${count}`)
 // });
-        
+
+// socket.emit('addWord');
+
+socket.emit('chat', '8371c2f7-e1df-4938-927a-e901500037e7','test001', 'fuck you bitch kuay Jenwit I na hee');
+
+// socket.on('chat', (username:string, message:string)=> {
+//     console.log(username, message);
+// })
