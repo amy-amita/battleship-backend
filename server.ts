@@ -3,6 +3,7 @@ import { Server } from 'socket.io'
 import mongoose from 'mongoose'
 import User from './models/userSchema'
 import Room from './models/roomSchema'
+import SwearWord from './models/swearWordSchema'
 
 //------------------------------------------- Connect to Database -------------------------------------------------//
 
@@ -174,14 +175,28 @@ io.on('connection', (socket) => {
         }
     )
 
-    socket.on('chat', async (roomId: String, message:String) => {
-        const room = await Room.findOne({ roomId })
+    socket.on('chat', async (roomId: string, username:string, message:string) => {
+        const room = await Room.findOne({ roomId });
+        const swearWord = await SwearWord.findById('61744a6a4753c57fded1d6cf');
+        const wordList = swearWord.wordList;
         const arr = message.split(' ');
-        
-        socket.to(room.pName.p1).to(room.pSocket.p2).emit('chat', message);
+        message = '';
+        for(var i = 0; i<arr.length;i++){
+            for(var j=0;j<wordList.length;j++){
+                if(arr[i].toLowerCase() === wordList[j].toLowerCase()){
+                    arr[i] = '***';
+                    break;
+                }
+            }
+            message+= arr[i] + ' ';
+        }
+        io.to(room.pSocket.p1).to(room.pSocket.p2).emit('chatBack', username, message);
     });
 
-    socket.on('disconnect', () => {
+    socket.on('disconnect', async() => {
+        const roomId = '8371c2f7-e1df-4938-927a-e901500037e7'
+        const update = {'pName.p2': '', 'pShipPos.p2': '', 'pReady.p2': false }
+        await Room.updateOne({ roomId }, update);
         console.log('Disconnected!')
     })
 })
