@@ -39,7 +39,7 @@ io.on('connection', (socket) => {
     })
 
     // create game
-    socket.on('createGame', async ( username: string
+    socket.on('createGame', async ( username: string, roundTime:number
             // cb: string
         ) => {
             const roomId = uuidv4()
@@ -54,7 +54,10 @@ io.on('connection', (socket) => {
                 pMissPos: { p1: '', p2: '' },
                 pReady: { p1: false, p2: false },
                 nextTurn: '',
-                timeOutId: String,
+                lastWinner: '',
+                timeOutId: '',
+                timer: roundTime
+
             })
             await room.save()
             socket.emit('roomCode', roomId)
