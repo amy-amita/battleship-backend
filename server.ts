@@ -37,9 +37,13 @@ io.on('connection', (socket) => {
             socket.emit('checkUsername', false, username)
         }
     })
-
+    let roomObj: any = {}
     // create game
-    socket.on('createGame', async ( username: string, roundTime:number
+    socket.on(
+        'createGame',
+        async (
+            username: string,
+            roundTime: number
             // cb: string
         ) => {
             const roomId = uuidv4()
@@ -56,8 +60,7 @@ io.on('connection', (socket) => {
                 nextTurn: '',
                 lastWinner: '',
                 timeOutId: '',
-                timer: roundTime
-
+                timer: roundTime,
             })
             await room.save()
             socket.emit('roomCode', roomId)
@@ -68,7 +71,11 @@ io.on('connection', (socket) => {
     )
 
     //join game
-    socket.on('joinGame', async ( roomId: string, username: string
+    socket.on(
+        'joinGame',
+        async (
+            roomId: string,
+            username: string
             // cb: any
         ) => {
             const room = await Room.findOne({ roomId })
@@ -85,12 +92,12 @@ io.on('connection', (socket) => {
                     console.log(`Joined ${roomId}`)
                     // cb(`Joined ${roomId}`)
                 } else {
-                    socket.emit('joinGame', false);
+                    socket.emit('joinGame', false)
                     console.log('This room is full!')
                     // cb(`This room is full!`)
                 }
             } else {
-                socket.emit('joinGame', false);
+                socket.emit('joinGame', false)
                 console.log('Room does not exist (join)')
                 // cb('Room does not exist (join)')
             }
@@ -108,7 +115,12 @@ io.on('connection', (socket) => {
 
     // pre-game w/ roomId
 
-    socket.on('ready', async ( roomId: string, username: string, shipPos: string
+    socket.on(
+        'ready',
+        async (
+            roomId: string,
+            username: string,
+            shipPos: string
             // cb: any
         ) => {
             let room = await Room.findOne({ roomId })
@@ -123,12 +135,12 @@ io.on('connection', (socket) => {
                 }
                 // cb(`${username} is ready`);
             } else {
-                console.log('room not ready 01');
+                console.log('room not ready 01')
                 socket.emit('Room does not exist (ready)')
             }
 
             room = await Room.findOne({ roomId })
-            if(room){
+            if (room) {
                 if (room.pReady.p1 === true && room.pReady.p2 === true) {
                     let update
                     if (room.pWinRound.p1 === 0 && room.pWinRound.p2 === 0) {
@@ -138,16 +150,18 @@ io.on('connection', (socket) => {
                                 () => io.to(room.pSocket.p1).to(room.pSocket.p2).emit('timeOut', room.pName.p2),
                                 10000
                             )
-                            console.log(timeOutId, typeof(timeOutId));
-                            update = { nextTurn: room.pName.p1, timeOutId }
+                            console.log(timeOutId, typeof timeOutId)
+                            update = { nextTurn: room.pName.p1 }
+                            roomObj[roomId]['timeoutId'] = timeOutId
                         } else {
                             io.to(room.pSocket.p1).to(room.pSocket.p2).emit('checkReady', room.pName.p2, room.timer)
                             const timeOutId = setTimeout(
                                 () => io.to(room.pSocket.p1).to(room.pSocket.p2).emit('timeOut', room.pName.p1),
                                 10000
                             )
-                            console.log(timeOutId, typeof(timeOutId));
-                            update = { nextTurn: room.pName.p2, timeOutId }
+                            console.log(timeOutId, typeof timeOutId)
+                            update = { nextTurn: room.pName.p2 }
+                            roomObj[roomId]['timeoutId'] = timeOutId
                         }
                         await Room.updateOne({ roomId }, update)
                     } else {
@@ -157,35 +171,42 @@ io.on('connection', (socket) => {
                                 () => io.to(room.pSocket.p1).to(room.pSocket.p2).emit('timeOut', room.pName.p2),
                                 10000
                             )
-                            console.log(timeOutId, typeof(timeOutId));
-                            update = { nextTurn: room.pName.p1, timeOutId }
+                            console.log(timeOutId, typeof timeOutId)
+                            update = { nextTurn: room.pName.p1 }
+                            roomObj[roomId]['timeoutId'] = timeOutId
                         } else {
                             io.to(room.pSocket.p1).to(room.pSocket.p2).emit('checkReady', room.pName.p2, room.timer)
                             const timeOutId = setTimeout(
                                 () => io.to(room.pSocket.p1).to(room.pSocket.p2).emit('timeOut', room.pName.p1),
                                 10000
                             )
-                            console.log(timeOutId, typeof(timeOutId));
-                            update = { nextTurn: room.pName.p2, timeOutId }
+                            console.log(timeOutId, typeof timeOutId)
+                            update = { nextTurn: room.pName.p2 }
+                            roomObj[roomId]['timeoutId'] = timeOutId
                         }
                         await Room.updateOne({ roomId }, update)
                     }
-                }else{
-                    console.log('Waiting for another player');
+                } else {
+                    console.log('Waiting for another player')
                     socket.emit('Waiting for another player (ready)')
                 }
-            } else{
-                console.log('room not exist 02');
+            } else {
+                console.log('room not exist 02')
             }
         }
     )
 
     //attack phase w/ roomId
-    socket.on('attack', async (roomId: string, username: string, shootPos: string
+    socket.on(
+        'attack',
+        async (
+            roomId: string,
+            username: string,
+            shootPos: string
             // cb: any
         ) => {
             const room = await Room.findOne({ roomId })
-            clearTimeout(room.timeOutId)
+            clearTimeout(roomObj[roomId]['timeOutId'])
             if (room) {
                 if (room.pName.p1 === username) {
                     const selfSocketId = room.pSocket.p1
@@ -217,6 +238,7 @@ io.on('connection', (socket) => {
                         () => io.to(room.pSocket.p1).to(room.pSocket.p2).emit('timeOut', room.pName.p1),
                         10000
                     )
+                    roomObj[roomId]['timeoutId'] = timeOutId
                     await Room.updateOne({ roomId }, { timeOutId })
                 } else if (room.pName.p2 === username) {
                     const selfSocketId = room.pSocket.p2
@@ -248,7 +270,7 @@ io.on('connection', (socket) => {
                         () => io.to(room.pSocket.p1).to(room.pSocket.p2).emit('timeOut', room.pName.p2),
                         10000
                     )
-                    await Room.updateOne({ roomId }, { timeOutId })
+                    roomObj[roomId]['timeoutId'] = timeOutId
                 }
             } else {
                 socket.emit('Room does not exist (attack)')
@@ -256,32 +278,30 @@ io.on('connection', (socket) => {
         }
     )
 
-    socket.on('chat', async (roomId: string, username:string, message:string) => {
-        const room = await Room.findOne({ roomId });
-        const swearWord = await SwearWord.findById('61744a6a4753c57fded1d6cf');
-        const wordList = swearWord.wordList;
-        const arr = message.split(' ');
-        message = '';
-        for(var i = 0; i<arr.length;i++){
-            for(var j=0;j<wordList.length;j++){
-                if(arr[i].toLowerCase() === wordList[j].toLowerCase()){
-                    arr[i] = '***';
-                    break;
+    socket.on('chat', async (roomId: string, username: string, message: string) => {
+        const room = await Room.findOne({ roomId })
+        const swearWord = await SwearWord.findById('61744a6a4753c57fded1d6cf')
+        const wordList = swearWord.wordList
+        const arr = message.split(' ')
+        message = ''
+        for (var i = 0; i < arr.length; i++) {
+            for (var j = 0; j < wordList.length; j++) {
+                if (arr[i].toLowerCase() === wordList[j].toLowerCase()) {
+                    arr[i] = '***'
+                    break
                 }
             }
-            message+= arr[i] + ' ';
+            message += arr[i] + ' '
         }
-        io.to(room.pSocket.p1).to(room.pSocket.p2).emit('chatBack', username, message);
-    });
-
-    socket.on('emote', (username:string, emote:string ) =>{
-        
+        io.to(room.pSocket.p1).to(room.pSocket.p2).emit('chatBack', username, message)
     })
 
-    socket.on('disconnect', async() => {
+    socket.on('emote', (username: string, emote: string) => {})
+
+    socket.on('disconnect', async () => {
         const roomId = '7c5406fa-c49f-4568-b929-4f82fff65e2c'
-        const update = {'pName.p2': '', 'pShipPos.p2': '', 'pReady.p2': false }
-        await Room.updateOne({ roomId }, update);
+        const update = { 'pName.p2': '', 'pShipPos.p2': '', 'pReady.p2': false }
+        await Room.updateOne({ roomId }, update)
         console.log('Disconnected!')
     })
 })
