@@ -13,6 +13,7 @@ const roomSchema = new mongoose.Schema({
     nextTurn: String,
     lastWinner: String,
     timeOutId: String,
+    timer: Number
 })
 
 export default mongoose.model('Room', roomSchema)
