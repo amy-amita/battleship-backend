@@ -135,16 +135,18 @@ io.on('connection', (socket) => {
                         if (Math.floor(Math.random() * 2) === 0) {
                             io.to(room.pSocket.p1).to(room.pSocket.p2).emit('checkReady', room.pName.p1, room.timer)
                             const timeOutId = setTimeout(
-                                () => io.to(room.pSocket.p1).to(room.pSocket.p2).emit('timeOut', room.pName.p2, room.timer),
+                                () => io.to(room.pSocket.p1).to(room.pSocket.p2).emit('timeOut', room.pName.p2),
                                 10000
                             )
+                            console.log(timeOutId, typeof(timeOutId));
                             update = { nextTurn: room.pName.p1, timeOutId }
                         } else {
                             io.to(room.pSocket.p1).to(room.pSocket.p2).emit('checkReady', room.pName.p2, room.timer)
                             const timeOutId = setTimeout(
-                                () => io.to(room.pSocket.p1).to(room.pSocket.p2).emit('timeOut', room.pName.p1, room.timer),
+                                () => io.to(room.pSocket.p1).to(room.pSocket.p2).emit('timeOut', room.pName.p1),
                                 10000
                             )
+                            console.log(timeOutId, typeof(timeOutId));
                             update = { nextTurn: room.pName.p2, timeOutId }
                         }
                         await Room.updateOne({ roomId }, update)
@@ -152,23 +154,25 @@ io.on('connection', (socket) => {
                         if (room.lastWinner === room.pName.p1) {
                             io.to(room.pSocket.p1).to(room.pSocket.p2).emit('checkReady', room.pName.p1, room.timer)
                             const timeOutId = setTimeout(
-                                () => io.to(room.pSocket.p1).to(room.pSocket.p2).emit('timeOut', room.pName.p2, room.timer),
+                                () => io.to(room.pSocket.p1).to(room.pSocket.p2).emit('timeOut', room.pName.p2),
                                 10000
                             )
+                            console.log(timeOutId, typeof(timeOutId));
                             update = { nextTurn: room.pName.p1, timeOutId }
                         } else {
                             io.to(room.pSocket.p1).to(room.pSocket.p2).emit('checkReady', room.pName.p2, room.timer)
                             const timeOutId = setTimeout(
-                                () => io.to(room.pSocket.p1).to(room.pSocket.p2).emit('timeOut', room.pName.p1, room.timer),
+                                () => io.to(room.pSocket.p1).to(room.pSocket.p2).emit('timeOut', room.pName.p1),
                                 10000
                             )
+                            console.log(timeOutId, typeof(timeOutId));
                             update = { nextTurn: room.pName.p2, timeOutId }
                         }
+                        await Room.updateOne({ roomId }, update)
                     }
-                    await Room.updateOne({ roomId }, update)
                 }else{
-                    console.log('room not ready 02');
-                    socket.emit('Room does not exist (ready)')
+                    console.log('Waiting for another player');
+                    socket.emit('Waiting for another player (ready)')
                 }
             } else{
                 console.log('room not exist 02');
@@ -275,7 +279,7 @@ io.on('connection', (socket) => {
     })
 
     socket.on('disconnect', async() => {
-        const roomId = '8371c2f7-e1df-4938-927a-e901500037e7'
+        const roomId = '7c5406fa-c49f-4568-b929-4f82fff65e2c'
         const update = {'pName.p2': '', 'pShipPos.p2': '', 'pReady.p2': false }
         await Room.updateOne({ roomId }, update);
         console.log('Disconnected!')

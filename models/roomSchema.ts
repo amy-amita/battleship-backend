@@ -12,7 +12,7 @@ const roomSchema = new mongoose.Schema({
     pReady: { p1: Boolean, p2: Boolean },
     nextTurn: String,
     lastWinner: String,
-    timeOutId: String,
+    timeOutId: Object,
     timer: Number
 })
 
