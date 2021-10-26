@@ -39,10 +39,7 @@ io.on('connection', (socket) => {
     })
 
     // create game
-    socket.on(
-        'createGame',
-        async (
-            username: string
+    socket.on('createGame', async ( username: string
             // cb: string
         ) => {
             const roomId = uuidv4()
@@ -68,11 +65,7 @@ io.on('connection', (socket) => {
     )
 
     //join game
-    socket.on(
-        'joinGame',
-        async (
-            roomId: string,
-            username: string
+    socket.on('joinGame', async ( roomId: string, username: string
             // cb: any
         ) => {
             const room = await Room.findOne({ roomId })
@@ -85,13 +78,16 @@ io.on('connection', (socket) => {
                         'pSocket.p2': socket.id,
                     }
                     await Room.updateOne(filter, update)
+                    socket.emit('joinGame', true);
                     console.log(`Joined ${roomId}`)
                     // cb(`Joined ${roomId}`)
                 } else {
+                    socket.emit('joinGame', false);
                     console.log('This room is full!')
                     // cb(`This room is full!`)
                 }
             } else {
+                socket.emit('joinGame', false);
                 console.log('Room does not exist (join)')
                 // cb('Room does not exist (join)')
             }
@@ -107,12 +103,7 @@ io.on('connection', (socket) => {
 
     // pre-game w/ roomId
 
-    socket.on(
-        'ready',
-        async (
-            roomId: string,
-            username: string,
-            shipPos: string
+    socket.on('ready', async ( roomId: string, username: string, shipPos: string
             // cb: any
         ) => {
             let room = await Room.findOne({ roomId })
@@ -172,12 +163,7 @@ io.on('connection', (socket) => {
     )
 
     //attack phase w/ roomId
-    socket.on(
-        'attack',
-        async (
-            roomId: string,
-            username: string,
-            shootPos: string
+    socket.on('attack', async (roomId: string, username: string, shootPos: string
             // cb: any
         ) => {
             const room = await Room.findOne({ roomId })
@@ -269,6 +255,10 @@ io.on('connection', (socket) => {
         }
         io.to(room.pSocket.p1).to(room.pSocket.p2).emit('chatBack', username, message);
     });
+
+    socket.on('emote', (username:string, emote:string ) =>{
+        
+    })
 
     socket.on('disconnect', async() => {
         const roomId = '8371c2f7-e1df-4938-927a-e901500037e7'
