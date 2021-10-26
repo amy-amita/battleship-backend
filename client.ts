@@ -37,8 +37,11 @@ socket.on('connect', () => {
 //     console.log(cb)
 //     });
 
+//findRoom
+// socket.emit('findRoom');
+
 // //ready w/ roomId
-// socket.emit('ready', '8371c2f7-e1df-4938-927a-e901500037e7', 'test001', '30,20,10,00,73,63,53,43,04,14,24,34,02,12,22,32', (cb: any) => {
+// socket.emit('ready', '18371c2f7-e1df-4938-927a-e901500037e7', 'test001', '30,20,10,00,73,63,53,43,04,14,24,34,02,12,22,32', (cb: any) => {
 //     console.log(cb)
 // });
 
@@ -60,7 +63,7 @@ socket.on('connect', () => {
 
 // socket.emit('addWord');
 
-socket.emit('chat', '8371c2f7-e1df-4938-927a-e901500037e7','test001', 'fuck you bitch kuay Jenwit I na hee');
+// socket.emit('chat', '8371c2f7-e1df-4938-927a-e901500037e7','test001', 'fuck you bitch kuay Jenwit I na hee');
 
 // socket.on('chat', (username:string, message:string)=> {
 //     console.log(username, message);
