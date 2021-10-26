@@ -113,10 +113,10 @@ io.on('connection', (socket) => {
             if (room) {
                 if (room.pName.p1 === username) {
                     await Room.updateOne({ roomId }, { 'pShipPos.p1': shipPos, 'pReady.p1': true })
-                    socket.emit('ready', room.pName.p2, room.timer)
+                    socket.emit('ready', room.pName.p2)
                 } else if (room.pName.p2 === username) {
                     await Room.updateOne({ roomId }, { 'pShipPos.p2': shipPos, 'pReady.p2': true })
-                    socket.emit('ready', room.pName.p1, room.timer)
+                    socket.emit('ready', room.pName.p1)
                 }
                 // cb(`${username} is ready`);
             } else {
@@ -128,16 +128,16 @@ io.on('connection', (socket) => {
                 let update
                 if (room.pWinRound.p1 === 0 && room.pWinRound.p2 === 0) {
                     if (Math.floor(Math.random() * 2) === 0) {
-                        io.to(room.pSocket.p1).to(room.pSocket.p2).emit('checkReady', room.pName.p1)
+                        io.to(room.pSocket.p1).to(room.pSocket.p2).emit('checkReady', room.pName.p1, room.timer)
                         const timeOutId = setTimeout(
-                            () => io.to(room.pSocket.p1).to(room.pSocket.p2).emit('timeOut', room.pName.p2),
+                            () => io.to(room.pSocket.p1).to(room.pSocket.p2).emit('timeOut', room.pName.p2, room.timer),
                             10000
                         )
                         update = { nextTurn: room.pName.p1, timeOutId }
                     } else {
-                        io.to(room.pSocket.p1).to(room.pSocket.p2).emit('checkReady', room.pName.p2)
+                        io.to(room.pSocket.p1).to(room.pSocket.p2).emit('checkReady', room.pName.p2, room.timer)
                         const timeOutId = setTimeout(
-                            () => io.to(room.pSocket.p1).to(room.pSocket.p2).emit('timeOut', room.pName.p1),
+                            () => io.to(room.pSocket.p1).to(room.pSocket.p2).emit('timeOut', room.pName.p1, room.timer),
                             10000
                         )
                         update = { nextTurn: room.pName.p2, timeOutId }
@@ -145,16 +145,16 @@ io.on('connection', (socket) => {
                     await Room.updateOne({ roomId }, update)
                 } else {
                     if (room.lastWinner === room.pName.p1) {
-                        io.to(room.pSocket.p1).to(room.pSocket.p2).emit('checkReady', room.pName.p1)
+                        io.to(room.pSocket.p1).to(room.pSocket.p2).emit('checkReady', room.pName.p1, room.timer)
                         const timeOutId = setTimeout(
-                            () => io.to(room.pSocket.p1).to(room.pSocket.p2).emit('timeOut', room.pName.p2),
+                            () => io.to(room.pSocket.p1).to(room.pSocket.p2).emit('timeOut', room.pName.p2, room.timer),
                             10000
                         )
                         update = { nextTurn: room.pName.p1, timeOutId }
                     } else {
-                        io.to(room.pSocket.p1).to(room.pSocket.p2).emit('checkReady', room.pName.p2)
+                        io.to(room.pSocket.p1).to(room.pSocket.p2).emit('checkReady', room.pName.p2, room.timer)
                         const timeOutId = setTimeout(
-                            () => io.to(room.pSocket.p1).to(room.pSocket.p2).emit('timeOut', room.pName.p1),
+                            () => io.to(room.pSocket.p1).to(room.pSocket.p2).emit('timeOut', room.pName.p1, room.timer),
                             10000
                         )
                         update = { nextTurn: room.pName.p2, timeOutId }
