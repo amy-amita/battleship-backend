@@ -4,6 +4,7 @@ import mongoose from 'mongoose'
 import User from './models/userSchema'
 import Room from './models/roomSchema'
 import SwearWord from './models/swearWordSchema'
+import { listenerCount } from 'process'
 
 //------------------------------------------- Connect to Database -------------------------------------------------//
 
@@ -16,6 +17,8 @@ const io = new Server(3031, {
         origin: ['http://localhost:3031'],
     },
 })
+
+let timeoutIds: any = {}
 
 io.on('connection', (socket) => {
     console.log(socket.id)
@@ -37,7 +40,7 @@ io.on('connection', (socket) => {
             socket.emit('checkUsername', false, username)
         }
     })
-    let roomObj: any = {}
+
     // create game
     socket.on(
         'createGame',
@@ -59,7 +62,6 @@ io.on('connection', (socket) => {
                 pReady: { p1: false, p2: false },
                 nextTurn: '',
                 lastWinner: '',
-                timeOutId: '',
                 timer: roundTime,
             })
             await room.save()
@@ -124,6 +126,22 @@ io.on('connection', (socket) => {
             // cb: any
         ) => {
             let room = await Room.findOne({ roomId })
+
+            async function timeout(s1: string, s2: string, nextTurn: number) {
+                let afterNext = 0
+                let nextPlayer = ''
+                if (nextTurn == 1) {
+                    nextPlayer = room.pName.p1
+                    afterNext = 2
+                } else {
+                    nextPlayer = room.pName.p2
+                    afterNext = 1
+                }
+                await Room.updateOne({ roomId }, { nextTurn: nextPlayer })
+                io.to(s1).to(s2).emit('timeOut', nextPlayer)
+                const timeOutId = setTimeout(timeout, room.timer, s1, s2, afterNext)
+                timeoutIds[roomId] = timeOutId
+            }
             // console.log(room);
             if (room) {
                 if (room.pName.p1 === username) {
@@ -142,49 +160,26 @@ io.on('connection', (socket) => {
             room = await Room.findOne({ roomId })
             if (room) {
                 if (room.pReady.p1 === true && room.pReady.p2 === true) {
-                    let update
                     if (room.pWinRound.p1 === 0 && room.pWinRound.p2 === 0) {
                         if (Math.floor(Math.random() * 2) === 0) {
                             io.to(room.pSocket.p1).to(room.pSocket.p2).emit('checkReady', room.pName.p1, room.timer)
-                            const timeOutId = setTimeout(
-                                () => io.to(room.pSocket.p1).to(room.pSocket.p2).emit('timeOut', room.pName.p2),
-                                10000
-                            )
-                            console.log(timeOutId, typeof timeOutId)
-                            update = { nextTurn: room.pName.p1 }
-                            roomObj[roomId]['timeoutId'] = timeOutId
+                            const timeOutId = setTimeout(timeout, room.timer, room.pSocket.p1, room.pSocket.p2, 2)
+                            timeoutIds[roomId] = timeOutId
                         } else {
                             io.to(room.pSocket.p1).to(room.pSocket.p2).emit('checkReady', room.pName.p2, room.timer)
-                            const timeOutId = setTimeout(
-                                () => io.to(room.pSocket.p1).to(room.pSocket.p2).emit('timeOut', room.pName.p1),
-                                10000
-                            )
-                            console.log(timeOutId, typeof timeOutId)
-                            update = { nextTurn: room.pName.p2 }
-                            roomObj[roomId]['timeoutId'] = timeOutId
+                            const timeOutId = setTimeout(timeout, room.timer, room.pSocket.p1, room.pSocket.p2, 1)
+                            timeoutIds[roomId] = timeOutId
                         }
-                        await Room.updateOne({ roomId }, update)
                     } else {
                         if (room.lastWinner === room.pName.p1) {
                             io.to(room.pSocket.p1).to(room.pSocket.p2).emit('checkReady', room.pName.p1, room.timer)
-                            const timeOutId = setTimeout(
-                                () => io.to(room.pSocket.p1).to(room.pSocket.p2).emit('timeOut', room.pName.p2),
-                                10000
-                            )
-                            console.log(timeOutId, typeof timeOutId)
-                            update = { nextTurn: room.pName.p1 }
-                            roomObj[roomId]['timeoutId'] = timeOutId
+                            const timeOutId = setTimeout(timeout, room.timer, room.pSocket.p1, room.pSocket.p2, 2)
+                            timeoutIds[roomId] = timeOutId
                         } else {
                             io.to(room.pSocket.p1).to(room.pSocket.p2).emit('checkReady', room.pName.p2, room.timer)
-                            const timeOutId = setTimeout(
-                                () => io.to(room.pSocket.p1).to(room.pSocket.p2).emit('timeOut', room.pName.p1),
-                                10000
-                            )
-                            console.log(timeOutId, typeof timeOutId)
-                            update = { nextTurn: room.pName.p2 }
-                            roomObj[roomId]['timeoutId'] = timeOutId
+                            const timeOutId = setTimeout(timeout, room.timer, room.pSocket.p1, room.pSocket.p2, 1)
+                            timeoutIds[roomId] = timeOutId
                         }
-                        await Room.updateOne({ roomId }, update)
                     }
                 } else {
                     console.log('Waiting for another player')
@@ -206,7 +201,24 @@ io.on('connection', (socket) => {
             // cb: any
         ) => {
             const room = await Room.findOne({ roomId })
-            clearTimeout(roomObj[roomId]['timeOutId'])
+            clearTimeout(timeoutIds[roomId])
+
+            async function timeout(s1: string, s2: string, nextTurn: number) {
+                let afterNext = 0
+                let nextPlayer = ''
+                if (nextTurn == 1) {
+                    nextPlayer = room.pName.p1
+                    afterNext = 2
+                } else {
+                    nextPlayer = room.pName.p2
+                    afterNext = 1
+                }
+                await Room.updateOne({ roomId }, { nextTurn: nextPlayer })
+                io.to(s1).to(s2).emit('timeOut', nextPlayer)
+                const timeOutId = setTimeout(timeout, room.timer, s1, s2, afterNext)
+                timeoutIds[roomId] = timeOutId
+            }
+
             if (room) {
                 if (room.pName.p1 === username) {
                     const selfSocketId = room.pSocket.p1
@@ -214,63 +226,60 @@ io.on('connection', (socket) => {
                     if (room.pShipPos.p2.includes(shootPos)) {
                         io.to(selfSocketId).emit('attack', 'Hit', shootPos, room.pName.p1)
                         io.to(otherSocketId).emit('attacked', 'Hit', shootPos, room.pName.p1)
-                        // cb(`Hit!`)
+
+                        const timeOutId = setTimeout(timeout, room.timer, room.pSocket.p1, room.pSocket.p2, 2)
+                        timeoutIds[roomId] = timeOutId
+
                         await Room.updateOne(
                             { roomId },
                             {
-                                nextTurn: room.pName.p1,
                                 'pHitPos.p1': room.pHitPos.p1 + shootPos,
                             }
                         )
                     } else {
                         io.to(selfSocketId).emit('attack', 'Missed', shootPos, room.pName.p2)
                         io.to(otherSocketId).emit('attacked', 'Missed', shootPos, room.pName.p2)
-                        // cb(`Missed`)
+
+                        const timeOutId = setTimeout(timeout, room.timer, room.pSocket.p1, room.pSocket.p2, 1)
+                        timeoutIds[roomId] = timeOutId
+
                         await Room.updateOne(
                             { roomId },
                             {
-                                nextTurn: room.pName.p2,
                                 'pMissPos.p1': room.pMissPos.p1 + shootPos,
                             }
                         )
                     }
-                    const timeOutId = setTimeout(
-                        () => io.to(room.pSocket.p1).to(room.pSocket.p2).emit('timeOut', room.pName.p1),
-                        10000
-                    )
-                    roomObj[roomId]['timeoutId'] = timeOutId
-                    await Room.updateOne({ roomId }, { timeOutId })
                 } else if (room.pName.p2 === username) {
                     const selfSocketId = room.pSocket.p2
                     const otherSocketId = room.pSocket.p1
                     if (room.pShipPos.p1.includes(shootPos)) {
                         io.to(selfSocketId).emit('attack', 'Hit', shootPos, room.pName.p2)
                         io.to(otherSocketId).emit('attacked', 'Hit', shootPos, room.pName.p2)
-                        // cb(`Hit!`)
+
+                        const timeOutId = setTimeout(timeout, room.timer, room.pSocket.p1, room.pSocket.p2, 1)
+                        timeoutIds[roomId] = timeOutId
+
                         await Room.updateOne(
                             { roomId },
                             {
-                                nextTurn: room.pName.p2,
                                 'pHitPos.p2': room.pHitPos.p2 + shootPos,
                             }
                         )
                     } else {
                         io.to(selfSocketId).emit('attack', 'Missed', shootPos, room.pName.p1)
                         io.to(otherSocketId).emit('attacked', 'Missed', shootPos, room.pName.p1)
-                        // cb(`Missed`)
+
+                        const timeOutId = setTimeout(timeout, room.timer, room.pSocket.p1, room.pSocket.p2, 2)
+                        timeoutIds[roomId] = timeOutId
+
                         await Room.updateOne(
                             { roomId },
                             {
-                                nextTurn: room.pName.p1,
                                 'pMissPos.p2': room.pMissPos.p2 + shootPos,
                             }
                         )
                     }
-                    const timeOutId = setTimeout(
-                        () => io.to(room.pSocket.p1).to(room.pSocket.p2).emit('timeOut', room.pName.p2),
-                        10000
-                    )
-                    roomObj[roomId]['timeoutId'] = timeOutId
                 }
             } else {
                 socket.emit('Room does not exist (attack)')

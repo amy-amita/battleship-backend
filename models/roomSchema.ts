@@ -12,8 +12,7 @@ const roomSchema = new mongoose.Schema({
     pReady: { p1: Boolean, p2: Boolean },
     nextTurn: String,
     lastWinner: String,
-    timeOutId: Object,
-    timer: Number
+    timer: Number,
 })
 
 export default mongoose.model('Room', roomSchema)
