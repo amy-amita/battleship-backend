@@ -113,10 +113,10 @@ io.on('connection', (socket) => {
             if (room) {
                 if (room.pName.p1 === username) {
                     await Room.updateOne({ roomId }, { 'pShipPos.p1': shipPos, 'pReady.p1': true })
-                    socket.emit('ready', room.pName.p2)
+                    socket.emit('ready', room.pName.p2, room.timer)
                 } else if (room.pName.p2 === username) {
                     await Room.updateOne({ roomId }, { 'pShipPos.p2': shipPos, 'pReady.p2': true })
-                    socket.emit('ready', room.pName.p1)
+                    socket.emit('ready', room.pName.p1, room.timer)
                 }
                 // cb(`${username} is ready`);
             } else {
