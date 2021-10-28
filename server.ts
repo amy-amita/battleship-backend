@@ -5,6 +5,7 @@ import User from './models/userSchema'
 import Room from './models/roomSchema'
 import SwearWord from './models/swearWordSchema'
 import { listenerCount } from 'process'
+import { TIMEOUT } from 'dns'
 
 //------------------------------------------- Connect to Database -------------------------------------------------//
 
@@ -137,6 +138,8 @@ io.on('connection', (socket) => {
                     nextPlayer = room.pName.p2
                     afterNext = 1
                 }
+                console.log('tm out')
+
                 await Room.updateOne({ roomId }, { nextTurn: nextPlayer })
                 io.to(s1).to(s2).emit('timeOut', nextPlayer)
                 const timeOutId = setTimeout(timeout, room.timer, s1, s2, afterNext)
@@ -201,6 +204,7 @@ io.on('connection', (socket) => {
             // cb: any
         ) => {
             const room = await Room.findOne({ roomId })
+            console.log(timeoutIds[roomId])
             clearTimeout(timeoutIds[roomId])
 
             async function timeout(s1: string, s2: string, nextTurn: number) {
@@ -308,7 +312,11 @@ io.on('connection', (socket) => {
     socket.on('emote', (username: string, emote: string) => {})
 
     socket.on('disconnect', async () => {
-        const roomId = '7c5406fa-c49f-4568-b929-4f82fff65e2c'
+        const room = await Room.findOne({ $or: [{ 'pSocket.p1': socket.id }, { 'pSocket.p2': socket.id }] })
+        console.log(room)
+        const { roomId } = room
+        clearTimeout(timeoutIds[roomId])
+
         const update = { 'pName.p2': '', 'pShipPos.p2': '', 'pReady.p2': false }
         await Room.updateOne({ roomId }, update)
         console.log('Disconnected!')
