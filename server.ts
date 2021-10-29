@@ -66,7 +66,7 @@ io.on('connection', (socket) => {
                 lastWinner: '',
                 timer: roundTime,
                 round: round,
-                roundCount: 0
+                roundCount: 0,
             })
             await room.save()
             socket.emit('roomCode', roomId)
@@ -98,12 +98,12 @@ io.on('connection', (socket) => {
                     console.log(`Joined ${roomId}`)
                     // cb(`Joined ${roomId}`)
                 } else {
-                    socket.emit('joinGame', false)
+                    io.to(room.pSocket.p1).to(socket.id).emit('joinGame', false)
                     console.log('This room is full!')
                     // cb(`This room is full!`)
                 }
             } else {
-                socket.emit('joinGame', false)
+                io.to(room.pSocket.p1).to(socket.id).emit('joinGame', false)
                 console.log('Room does not exist (join)')
                 // cb('Room does not exist (join)')
             }
@@ -238,7 +238,7 @@ io.on('connection', (socket) => {
                         await Room.updateOne(
                             { roomId },
                             {
-                                'pHitPos.p1': (room.pHitPos.p1 + ',' + shootPos).replace(/^,|,$/g, "")
+                                'pHitPos.p1': (room.pHitPos.p1 + ',' + shootPos).replace(/^,|,$/g, ''),
                             }
                         )
                     } else {
@@ -251,7 +251,7 @@ io.on('connection', (socket) => {
                         await Room.updateOne(
                             { roomId },
                             {
-                                'pMissPos.p1': (room.pMissPos.p1 + ','+ shootPos).replace(/^,|,$/g, "")
+                                'pMissPos.p1': (room.pMissPos.p1 + ',' + shootPos).replace(/^,|,$/g, ''),
                             }
                         )
                     }
@@ -268,7 +268,7 @@ io.on('connection', (socket) => {
                         await Room.updateOne(
                             { roomId },
                             {
-                                'pHitPos.p2': (room.pHitPos.p2 + ','+ shootPos).replace(/^,|,$/g, "")
+                                'pHitPos.p2': (room.pHitPos.p2 + ',' + shootPos).replace(/^,|,$/g, ''),
                             }
                         )
                     } else {
@@ -281,7 +281,7 @@ io.on('connection', (socket) => {
                         await Room.updateOne(
                             { roomId },
                             {
-                                'pMissPos.p2': (room.pMissPos.p2 + ','+ shootPos).replace(/^,|,$/g, "")
+                                'pMissPos.p2': (room.pMissPos.p2 + ',' + shootPos).replace(/^,|,$/g, ''),
                             }
                         )
                     }
@@ -289,22 +289,22 @@ io.on('connection', (socket) => {
                 const updatedRoom = await Room.findOne({ roomId })
                 const p1HitPos = updatedRoom.pHitPos.p1.split(',')
                 const p2HitPos = updatedRoom.pHitPos.p2.split(',')
-                let {pSocket, pName, round, roundCount, pWinRound} = updatedRoom
+                let { pSocket, pName, round, roundCount, pWinRound } = updatedRoom
                 // console.log(p2HitPos, p2HitPos.length)
-                if(p1HitPos.length == 16 || p2HitPos.length == 16){
+                if (p1HitPos.length == 16 || p2HitPos.length == 16) {
                     roundCount++
-                    if(p1HitPos.length == 16){
+                    if (p1HitPos.length == 16) {
                         pWinRound.p1++
                         io.to(pSocket.p1).emit('gameEnds', pName.p1, pWinRound.p1, pWinRound.p2, roundCount, round)
                         io.to(pSocket.p2).emit('gameEnds', pName.p1, pWinRound.p2, pWinRound.p1, roundCount, round)
                         console.log(`p1 won, round: ${roundCount}/${round}`)
-                        await Room.updateOne({roomId},{lastWinner: pName.p1, 'pWinRound.p1': pWinRound.p1})
-                    }else if(p2HitPos.length == 16){
+                        await Room.updateOne({ roomId }, { lastWinner: pName.p1, 'pWinRound.p1': pWinRound.p1 })
+                    } else if (p2HitPos.length == 16) {
                         pWinRound.p2++
                         io.to(pSocket.p1).emit('gameEnds', pName.p2, pWinRound.p1, pWinRound.p2, roundCount, round)
                         io.to(pSocket.p2).emit('gameEnds', pName.p2, pWinRound.p2, pWinRound.p1, roundCount, round)
                         console.log(`p2 won, round: ${roundCount}/${round}`)
-                        await Room.updateOne({roomId},{lastWinner: pName.p2, 'pWinRound.p2': pWinRound.p2})
+                        await Room.updateOne({ roomId }, { lastWinner: pName.p2, 'pWinRound.p2': pWinRound.p2 })
                     }
                 }
             } else {
@@ -331,9 +331,9 @@ io.on('connection', (socket) => {
         io.to(room.pSocket.p1).to(room.pSocket.p2).emit('chatBack', username, message)
     })
 
-    socket.on('emote', async(roomId: string, username: string, emote: string) => {
+    socket.on('emote', async (roomId: string, username: string, emote: string) => {
         const room = await Room.findOne({ roomId })
-        io.to(room.pSocket.p1).to(room.pSocket.p2).emit('emoteResponse', username, emote);
+        io.to(room.pSocket.p1).to(room.pSocket.p2).emit('emoteResponse', username, emote)
     })
 
     socket.on('disconnect', async () => {
@@ -342,12 +342,10 @@ io.on('connection', (socket) => {
         await Room.updateOne({ roomid }, update)
 
         const room = await Room.findOne({ $or: [{ 'pSocket.p1': socket.id }, { 'pSocket.p2': socket.id }] })
-        if(room){
+        if (room) {
             const { roomId } = room
             clearTimeout(timeoutIds[roomId])
         }
-        
-
 
         console.log('Disconnected!')
     })
