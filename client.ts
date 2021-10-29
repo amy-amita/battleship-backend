@@ -19,31 +19,34 @@ import io from 'socket.io-client'
 //   messageInput.value = "";
 // })
 
-
-
-
 const socket = io('http://localhost:3031')
 socket.on('connect', () => {
     console.log(socket.id)
-});
+})
 
-//create game
-// socket.emit('createGame', 'test001', (cb: any) => {
+// // create game
+// socket.emit('createGame', 'test001', 10, 3, (cb: any) => {
 //     console.log(cb)
 // });
 
 // //join game
-// socket.emit('joinGame', '8371c2f7-e1df-4938-927a-e901500037e7', 'james', (cb: any) => {
+// socket.emit('joinGame', 'c069323e-09dc-4394-b1f3-37969a669f37', 'james', (cb: any) => {
 //     console.log(cb)
 //     });
 
-//findRoom
+// // findRoom
 // socket.emit('findRoom');
 
 // //ready w/ roomId
-// socket.emit('ready', '18371c2f7-e1df-4938-927a-e901500037e7', 'test001', '30,20,10,00,73,63,53,43,04,14,24,34,02,12,22,32', (cb: any) => {
-//     console.log(cb)
-// });
+// socket.emit(
+//     'ready',
+//     'c069323e-09dc-4394-b1f3-37969a669f37',
+//     'test001',
+//     '30,20,10,00,73,63,53,43,04,14,24,34,02,12,22,32',
+//     (cb: any) => {
+//         console.log(cb)
+//     }
+// )
 
 // //attack w/ roomId
 // socket.emit('attack', '8371c2f7-e1df-4938-927a-e901500037e7', 'test001', '77',
@@ -55,7 +58,6 @@ socket.on('connect', () => {
 // socket.on('findRoom', (rooms) => {
 //     console.log(rooms)
 // });
-
 
 // socket.on('onlineNum', (count) => {
 //     console.log(`Player Online: ${count}`)

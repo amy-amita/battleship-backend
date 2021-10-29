@@ -13,6 +13,9 @@ const roomSchema = new mongoose.Schema({
     nextTurn: String,
     lastWinner: String,
     timer: Number,
+    round: Number,
+    roundCount: Number,
+    roomStatus: String,
 })
 
 export default mongoose.model('Room', roomSchema)
