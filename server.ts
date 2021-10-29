@@ -43,7 +43,7 @@ io.on('connection', (socket) => {
     })
 
     // create game
-    socket.on('createGame', async (username: string, roundTime: number, round: number) => {
+    socket.on('createGame', async (username: string, roundTime: number, round: number, roomStatus: string) => {
         const roomId = uuidv4()
         const room = new Room({
             roomId,
@@ -60,6 +60,7 @@ io.on('connection', (socket) => {
             timer: roundTime,
             round: round,
             roundCount: 0,
+            roomStatus: roomStatus,
         })
         await room.save()
         socket.emit('roomCode', roomId)
@@ -94,12 +95,11 @@ io.on('connection', (socket) => {
         // console.log(typeof(count));
         // console.log(`online player: ${count}`);
         socket.emit('onlineNum', count)
-        let rooms = await Room.find()
+        let rooms = await Room.find({ roomStatus: 'public' })
         socket.emit('findRoom', rooms)
     })
 
     // pre-game w/ roomId
-
     socket.on('ready', async (roomId: string, username: string, shipPos: string) => {
         let room = await Room.findOne({ roomId })
 
@@ -296,6 +296,16 @@ io.on('connection', (socket) => {
     socket.on('emote', async (roomId: string, username: string, emote: string) => {
         const room = await Room.findOne({ roomId })
         io.to(room.pSocket.p1).to(room.pSocket.p2).emit('emoteResponse', username, emote)
+    })
+
+    socket.on('pause', async (roomId: string, username: string) => {
+        const room = await Room.findOne({ roomId })
+        io.to(room.pSocket.p1).to(room.pSocket.p2).emit('pauseResponse', 'pause')
+    })
+
+    socket.on('resume', async (roomId: string, username: string) => {
+        const room = await Room.findOne({ roomId })
+        io.to(room.pSocket.p1).to(room.pSocket.p2).emit('resumeResponse', 'resume')
     })
 
     socket.on('disconnect', async () => {
