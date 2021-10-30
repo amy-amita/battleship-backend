@@ -24,6 +24,15 @@ let timeoutIds: any = {}
 io.on('connection', (socket) => {
     console.log(socket.id)
 
+    //admin
+    socket.on('resetGame', async (password: string) => {
+        if (password === 'iamadmin') {
+            io.emit('resetGame', true)
+        } else {
+            socket.emit('resetGame', false)
+        }
+    })
+
     // open page
     socket.on('userData', async (username: string, avatarName: string) => {
         console.log(username)
@@ -79,14 +88,14 @@ io.on('connection', (socket) => {
                     'pSocket.p2': socket.id,
                 }
                 await Room.updateOne(filter, update)
-                io.to(room.pSocket.p1).to(socket.id).emit('checkJoin', true)
+                io.to(room.pSocket.p1).to(socket.id).emit('joinGame', true)
                 console.log(`Joined ${roomId}`)
             } else {
-                io.to(room.pSocket.p1).to(socket.id).emit('checkJoin', false)
+                io.to(room.pSocket.p1).to(socket.id).emit('joinGame', false)
                 console.log('This room is full!')
             }
         } else {
-            io.to(socket.id).emit('checkJoin', false)
+            io.to(socket.id).emit('joinGame', false)
             console.log('Room does not exist (join)')
         }
     })
