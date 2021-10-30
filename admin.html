@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Battleship Admin</title>
+        <!-- <script src="script.js" type="module"></script> -->
+        <script src="https://cdn.socket.io/4.3.2/socket.io.esm.min.js">
+
+            const socket = io('http://localhost:3031')
+
+            socket.on('connect', () => {
+                console.log('connected to server!')
+            })
+
+            function displayMsg(msg) {
+                const div = document.createElement('div')
+                div.textContent = msgdocument.getElementById('message-container').append(div)
+            }
+            // console.log('Current directory: ' + process.cwd())
+        </script>
+    </head>
+    <body>
+        <div>
+            <form id="form">
+                <label for="password">Enter Password</label>
+                <input type="text" id="password" name="password" />
+                <button id="reset-button">Reset</button>
+            </form>
+        </div>
+    </body>
+</html>

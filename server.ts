@@ -15,19 +15,34 @@ mongoose.connect('mongodb+srv://testuser:battleship@cluster0.w9j5l.mongodb.net/b
 
 const io = new Server(3031, {
     cors: {
-        origin: ['http://localhost:3031'],
+        origin: ['https://localhost:5500/'],
     },
 })
 
 let timeoutIds: any = {}
 
 io.on('connection', (socket) => {
-    console.log(socket.id)
+    console.log(`socket id: ${socket.id}`)
 
     //admin
-    socket.on('resetGame', async (password: string) => {
+    socket.on('resetGame', async (roomId: string, password: string) => {
         if (password === 'iamadmin') {
-            io.emit('resetGame', true)
+            const room = await Room.findOne({ roomId })
+            const update = {
+                'pScore.p1': 0,
+                'pScore.p2': 0,
+                'pShipPos.p1': '',
+                'pShipPos.p2': '',
+                'pHitPos.p1': '',
+                'pHitPos.p2': '',
+                'pMissPos.p1': '',
+                'pMissPos.p2': '',
+                'pReady.p1': false,
+                'pReady.p2': false,
+                nextTurn: '',
+            }
+            Room.updateOne({ roomId }, update)
+            io.to(socket.id).to(room.pSocket.p1).to(room.pSocket.p2).emit('resetGame', true)
         } else {
             socket.emit('resetGame', false)
         }
@@ -330,7 +345,7 @@ io.on('connection', (socket) => {
         io.to(room.pSocket.p1).to(room.pSocket.p2).emit('emoteResponse', username, emote)
     })
 
-    socket.on('pause', async (roomId: string, username: string) => {
+    socket.on('pause', async (roomId: string) => {
         const room = await Room.findOne({ roomId })
         io.to(room.pSocket.p1).to(room.pSocket.p2).emit('pauseResponse', 'pause')
     })

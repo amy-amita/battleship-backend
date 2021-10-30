@@ -18,7 +18,7 @@
         "nodemon": "^2.0.14",
         "prompt-sync": "^4.2.0",
         "socket.io": "^4.2.0",
-        "socket.io-client": "^4.2.0",
+        "socket.io-client": "^4.3.2",
         "uuid": "^8.3.2"
     },
     "devDependencies": {
