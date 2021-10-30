@@ -44,6 +44,7 @@ io.on('connection', (socket) => {
 
     // create game
     socket.on('createGame', async (username: string, roundTime: number, round: number, roomStatus: string) => {
+        // console.log(`name: ${username}, time: ${roundTime}, round ${round}, status: ${roomStatus}`)
         const roomId = uuidv4()
         const room = new Room({
             roomId,
@@ -78,14 +79,14 @@ io.on('connection', (socket) => {
                     'pSocket.p2': socket.id,
                 }
                 await Room.updateOne(filter, update)
-                io.to(room.pSocket.p1).to(socket.id).emit('joinGame', true)
+                io.to(room.pSocket.p1).to(socket.id).emit('checkJoin', true)
                 console.log(`Joined ${roomId}`)
             } else {
-                io.to(room.pSocket.p1).to(socket.id).emit('joinGame', false)
+                io.to(room.pSocket.p1).to(socket.id).emit('checkJoin', false)
                 console.log('This room is full!')
             }
         } else {
-            io.to(room.pSocket.p1).to(socket.id).emit('joinGame', false)
+            io.to(room.pSocket.p1).to(socket.id).emit('checkJoin', false)
             console.log('Room does not exist (join)')
         }
     })
@@ -95,8 +96,10 @@ io.on('connection', (socket) => {
         // console.log(typeof(count));
         // console.log(`online player: ${count}`);
         socket.emit('onlineNum', count)
-        let rooms = await Room.find({ roomStatus: 'public' })
-        socket.emit('findRoom', rooms)
+        let rooms = await Room.find({ roomStatus: 'public', 'pName.p2': '' }, '-_id pName.p1 roomId').exec()
+        // const names = rooms.map((room: any) => room['pName']['p1'])
+        console.log(rooms)
+        socket.emit('findRoom', JSON.stringify(rooms))
     })
 
     // pre-game w/ roomId
@@ -123,10 +126,11 @@ io.on('connection', (socket) => {
         if (room) {
             if (room.pName.p1 === username) {
                 await Room.updateOne({ roomId }, { 'pShipPos.p1': shipPos, 'pReady.p1': true })
-                socket.emit('ready', room.pName.p2)
+                //parameter = opponent's name, roundCount, round
+                socket.emit('ready', room.pName.p2, room.roundCount, room.round)
             } else if (room.pName.p2 === username) {
                 await Room.updateOne({ roomId }, { 'pShipPos.p2': shipPos, 'pReady.p2': true })
-                socket.emit('ready', room.pName.p1)
+                socket.emit('ready', room.pName.p1, room.roundCount, room.round)
             }
         } else {
             console.log('room not ready 01')
@@ -138,6 +142,7 @@ io.on('connection', (socket) => {
             if (room.pReady.p1 === true && room.pReady.p2 === true) {
                 if (room.pWinRound.p1 === 0 && room.pWinRound.p2 === 0) {
                     if (Math.floor(Math.random() * 2) === 0) {
+                        //parameter = player who begins, timer
                         io.to(room.pSocket.p1).to(room.pSocket.p2).emit('checkReady', room.pName.p1, room.timer)
                         const timeOutId = setTimeout(timeout, room.timer, room.pSocket.p1, room.pSocket.p2, 2)
                         timeoutIds[roomId] = timeOutId
@@ -253,7 +258,7 @@ io.on('connection', (socket) => {
             const p1HitPos = updatedRoom.pHitPos.p1.split(',')
             const p2HitPos = updatedRoom.pHitPos.p2.split(',')
             let { pSocket, pName, round, roundCount, pWinRound } = updatedRoom
-            // console.log(p2HitPos, p2HitPos.length)
+            console.log(p2HitPos, p2HitPos.length)
             if (p1HitPos.length == 16 || p2HitPos.length == 16) {
                 roundCount++
                 if (p1HitPos.length == 16) {
@@ -261,14 +266,32 @@ io.on('connection', (socket) => {
                     io.to(pSocket.p1).emit('gameEnds', pName.p1, pWinRound.p1, pWinRound.p2, roundCount, round)
                     io.to(pSocket.p2).emit('gameEnds', pName.p1, pWinRound.p2, pWinRound.p1, roundCount, round)
                     console.log(`p1 won, round: ${roundCount}/${round}`)
-                    await Room.updateOne({ roomId }, { lastWinner: pName.p1, 'pWinRound.p1': pWinRound.p1 })
+                    await Room.updateOne(
+                        { roomId },
+                        { lastWinner: pName.p1, 'pWinRound.p1': pWinRound.p1, roundCount: roundCount }
+                    )
                 } else if (p2HitPos.length == 16) {
                     pWinRound.p2++
                     io.to(pSocket.p1).emit('gameEnds', pName.p2, pWinRound.p1, pWinRound.p2, roundCount, round)
                     io.to(pSocket.p2).emit('gameEnds', pName.p2, pWinRound.p2, pWinRound.p1, roundCount, round)
                     console.log(`p2 won, round: ${roundCount}/${round}`)
-                    await Room.updateOne({ roomId }, { lastWinner: pName.p2, 'pWinRound.p2': pWinRound.p2 })
+                    await Room.updateOne(
+                        { roomId },
+                        { lastWinner: pName.p2, 'pWinRound.p2': pWinRound.p2, roundCount: roundCount }
+                    )
                 }
+                clearTimeout(timeoutIds[roomId])
+                const update = {
+                    'pScore.p1': 0,
+                    'pScore.p2': 0,
+                    // 'pShipPos.p1': '',
+                    'pShipPos.p2': '',
+                    'pHitPos.p1': '',
+                    'pHitPos.p2': '',
+                    'pMissPos.p1': '',
+                    'pMissPos.p2': '',
+                }
+                await Room.updateOne({ roomId }, update)
             }
         } else {
             socket.emit('Room does not exist (attack)')
