@@ -86,7 +86,7 @@ io.on('connection', (socket) => {
                 console.log('This room is full!')
             }
         } else {
-            io.to(room.pSocket.p1).to(socket.id).emit('checkJoin', false)
+            io.to(socket.id).emit('checkJoin', false)
             console.log('Room does not exist (join)')
         }
     })
