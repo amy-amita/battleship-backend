@@ -70,3 +70,8 @@ socket.on('connect', () => {
 // socket.on('chat', (username:string, message:string)=> {
 //     console.log(username, message);
 // })
+socket.emit('findRoom')
+socket.on('findRoom', (rooms) => {
+    console.log(rooms)
+    console.log(typeof rooms)
+})
