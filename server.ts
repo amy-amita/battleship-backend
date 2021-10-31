@@ -199,8 +199,9 @@ io.on('connection', (socket) => {
                 const selfSocketId = room.pSocket.p1
                 const otherSocketId = room.pSocket.p2
                 if (room.pShipPos.p2.includes(shootPos)) {
-                    io.to(selfSocketId).emit('attack', 'Hit', shootPos, room.pName.p1)
-                    io.to(otherSocketId).emit('attacked', 'Hit', shootPos, room.pName.p1)
+                    const p1NewScore = room.pScore.p1 + 1
+                    io.to(selfSocketId).emit('attack', 'Hit', shootPos, room.pName.p1, p1NewScore)
+                    io.to(otherSocketId).emit('attacked', 'Hit', shootPos, room.pName.p1, p1NewScore)
 
                     const timeOutId = setTimeout(timeout, room.timer, room.pSocket.p1, room.pSocket.p2, 2, roomId)
                     startTimeMS[roomId] = Date.now()
@@ -210,6 +211,7 @@ io.on('connection', (socket) => {
                         { roomId },
                         {
                             'pHitPos.p1': (room.pHitPos.p1 + ',' + shootPos).replace(/^,|,$/g, ''),
+                            'pScore.p1': p1NewScore,
                         }
                     )
                 } else {
@@ -231,8 +233,9 @@ io.on('connection', (socket) => {
                 const selfSocketId = room.pSocket.p2
                 const otherSocketId = room.pSocket.p1
                 if (room.pShipPos.p1.includes(shootPos)) {
-                    io.to(selfSocketId).emit('attack', 'Hit', shootPos, room.pName.p2)
-                    io.to(otherSocketId).emit('attacked', 'Hit', shootPos, room.pName.p2)
+                    const p2NewScore = room.pScore.p2 + 1
+                    io.to(selfSocketId).emit('attack', 'Hit', shootPos, room.pName.p2, p2NewScore)
+                    io.to(otherSocketId).emit('attacked', 'Hit', shootPos, room.pName.p2, p2NewScore)
 
                     const timeOutId = setTimeout(timeout, room.timer, room.pSocket.p1, room.pSocket.p2, 1, roomId)
                     startTimeMS[roomId] = Date.now()
@@ -242,6 +245,7 @@ io.on('connection', (socket) => {
                         { roomId },
                         {
                             'pHitPos.p2': (room.pHitPos.p2 + ',' + shootPos).replace(/^,|,$/g, ''),
+                            'pScore.p1': p2NewScore,
                         }
                     )
                 } else {
