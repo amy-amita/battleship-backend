@@ -107,14 +107,16 @@ io.on('connection', (socket) => {
                     'pSocket.p2': socket.id,
                 }
                 await Room.updateOne(filter, update)
-                io.to(room.pSocket.p1).to(socket.id).emit('joinGame', true)
+                io.to(room.pSocket.p1).emit('joinGameCreate', true)
+                io.to(socket.id).emit('joinGameJoin', true)
                 console.log(`Joined ${roomId}`)
             } else {
-                io.to(room.pSocket.p1).to(socket.id).emit('joinGame', false)
+                io.to(room.pSocket.p1).emit('joinGameCreate', false)
+                io.to(socket.id).emit('joinGameJoin', false, 0)
                 console.log('This room is full!')
             }
         } else {
-            io.to(socket.id).emit('joinGame', false)
+            io.to(socket.id).emit('joinGameJoin', false, 1)
             console.log('Room does not exist (join)')
         }
     })
