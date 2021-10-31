@@ -86,7 +86,7 @@ io.on('connection', (socket) => {
             pReady: { p1: false, p2: false },
             nextTurn: '',
             lastWinner: '',
-            timer: roundTime,
+            timer: roundTime * 1000,
             round: round,
             roundCount: 0,
             roomStatus: roomStatus,
@@ -200,6 +200,8 @@ io.on('connection', (socket) => {
                 const otherSocketId = room.pSocket.p2
                 if (room.pShipPos.p2.includes(shootPos)) {
                     const p1NewScore = room.pScore.p1 + 1
+                    console.log(`p1 score : ${p1NewScore}`)
+
                     io.to(selfSocketId).emit('attack', 'Hit', shootPos, room.pName.p1, p1NewScore)
                     io.to(otherSocketId).emit('attacked', 'Hit', shootPos, room.pName.p1, p1NewScore)
 
@@ -234,6 +236,8 @@ io.on('connection', (socket) => {
                 const otherSocketId = room.pSocket.p1
                 if (room.pShipPos.p1.includes(shootPos)) {
                     const p2NewScore = room.pScore.p2 + 1
+                    console.log(`p2 score : ${p2NewScore}`)
+
                     io.to(selfSocketId).emit('attack', 'Hit', shootPos, room.pName.p2, p2NewScore)
                     io.to(otherSocketId).emit('attacked', 'Hit', shootPos, room.pName.p2, p2NewScore)
 
