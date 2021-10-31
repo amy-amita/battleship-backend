@@ -44,10 +44,10 @@ io.on('connection', (socket) => {
                 nextTurn: '',
             }
             await Room.updateOne({ roomId }, update)
-            io.to(socket.id).to(room.pSocket.p1).to(room.pSocket.p2).emit('resetGame', true)
+            io.to(socket.id).to(room.pSocket.p1).to(room.pSocket.p2).emit('checkReset', true)
             console.log('reset successful!')
         } else {
-            socket.emit('resetGame', false)
+            socket.emit('checkReset', false)
             console.log('wrong password!')
         }
     })
