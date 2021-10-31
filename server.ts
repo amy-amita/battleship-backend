@@ -217,8 +217,8 @@ io.on('connection', (socket) => {
                         }
                     )
                 } else {
-                    io.to(selfSocketId).emit('attack', 'Missed', shootPos, room.pName.p2)
-                    io.to(otherSocketId).emit('attacked', 'Missed', shootPos, room.pName.p2)
+                    io.to(selfSocketId).emit('attack', 'Missed', shootPos, room.pName.p2, room.pScore.p1)
+                    io.to(otherSocketId).emit('attacked', 'Missed', shootPos, room.pName.p2, room.pScore.p1)
 
                     const timeOutId = setTimeout(timeout, room.timer, room.pSocket.p1, room.pSocket.p2, 1, roomId)
                     startTimeMS[roomId] = Date.now()
@@ -253,8 +253,8 @@ io.on('connection', (socket) => {
                         }
                     )
                 } else {
-                    io.to(selfSocketId).emit('attack', 'Missed', shootPos, room.pName.p1)
-                    io.to(otherSocketId).emit('attacked', 'Missed', shootPos, room.pName.p1)
+                    io.to(selfSocketId).emit('attack', 'Missed', shootPos, room.pName.p1, room.pScore.p2)
+                    io.to(otherSocketId).emit('attacked', 'Missed', shootPos, room.pName.p1, room.pScore.p2)
 
                     const timeOutId = setTimeout(timeout, room.timer, room.pSocket.p1, room.pSocket.p2, 2, roomId)
                     startTimeMS[roomId] = Date.now()
