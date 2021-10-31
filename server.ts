@@ -4,8 +4,7 @@ import mongoose from 'mongoose'
 import User from './models/userSchema'
 import Room from './models/roomSchema'
 import SwearWord from './models/swearWordSchema'
-import { listenerCount } from 'process'
-import { TIMEOUT } from 'dns'
+import cors from 'cors'
 
 //------------------------------------------- Connect to Database -------------------------------------------------//
 
@@ -15,7 +14,8 @@ mongoose.connect('mongodb+srv://testuser:battleship@cluster0.w9j5l.mongodb.net/b
 
 const io = new Server(3031, {
     cors: {
-        origin: ['http://localhost:3031'],
+        origin: '*',
+        methods: ['GET', 'POST'],
     },
 })
 
@@ -24,20 +24,37 @@ let startTimeMS: any = {}
 let remainingTimeout: any = {}
 
 io.on('connection', (socket) => {
-    console.log(socket.id)
+    console.log(`socket id: ${socket.id}`)
 
     //admin
-    socket.on('resetGame', async (password: string) => {
+    socket.on('reset', async (roomId: string, password: string) => {
         if (password === 'iamadmin') {
-            io.emit('resetGame', true)
+            const room = await Room.findOne({ roomId })
+            const update = {
+                'pScore.p1': 0,
+                'pScore.p2': 0,
+                'pShipPos.p1': '',
+                'pShipPos.p2': '',
+                'pHitPos.p1': '',
+                'pHitPos.p2': '',
+                'pMissPos.p1': '',
+                'pMissPos.p2': '',
+                'pReady.p1': false,
+                'pReady.p2': false,
+                nextTurn: '',
+            }
+            await Room.updateOne({ roomId }, update)
+            io.to(socket.id).to(room.pSocket.p1).to(room.pSocket.p2).emit('checkReset', true)
+            console.log('reset successful!')
         } else {
-            socket.emit('resetGame', false)
+            socket.emit('checkReset', false)
+            console.log('wrong password!')
         }
     })
 
     // open page
     socket.on('userData', async (username: string, avatarName: string) => {
-        console.log(username)
+        console.log(`username=${username}`)
 
         const user = await User.findOne({ username })
         if (user == null) {
@@ -90,14 +107,16 @@ io.on('connection', (socket) => {
                     'pSocket.p2': socket.id,
                 }
                 await Room.updateOne(filter, update)
-                io.to(room.pSocket.p1).to(socket.id).emit('joinGame', true)
+                io.to(room.pSocket.p1).emit('joinGameCreate', true)
+                io.to(socket.id).emit('joinGameJoin', true)
                 console.log(`Joined ${roomId}`)
             } else {
-                io.to(room.pSocket.p1).to(socket.id).emit('joinGame', false)
+                io.to(room.pSocket.p1).emit('joinGameCreate', false)
+                io.to(socket.id).emit('joinGameJoin', false, 0)
                 console.log('This room is full!')
             }
         } else {
-            io.to(socket.id).emit('joinGame', false)
+            io.to(socket.id).emit('joinGameJoin', false, 1)
             console.log('Room does not exist (join)')
         }
     })
