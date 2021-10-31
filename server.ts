@@ -81,7 +81,7 @@ io.on('connection', (socket) => {
                 io.to(room.pSocket.p1).to(socket.id).emit('joinGame', true)
                 console.log(`Joined ${roomId}`)
             } else {
-                io.to(room.pSocket.p1).to(socket.id).emit('joinGame', false)
+                io.to(socket.id).emit('joinGameJoin', false, 0)
                 console.log('This room is full!')
             }
         } else {
