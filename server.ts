@@ -4,8 +4,7 @@ import mongoose from 'mongoose'
 import User from './models/userSchema'
 import Room from './models/roomSchema'
 import SwearWord from './models/swearWordSchema'
-import { listenerCount } from 'process'
-import { TIMEOUT } from 'dns'
+import cors from 'cors'
 
 //------------------------------------------- Connect to Database -------------------------------------------------//
 
@@ -15,7 +14,8 @@ mongoose.connect('mongodb+srv://testuser:battleship@cluster0.w9j5l.mongodb.net/b
 
 const io = new Server(3031, {
     cors: {
-        origin: ['https://localhost:5500/'],
+        origin: '*',
+        methods: ['GET', 'POST'],
     },
 })
 
