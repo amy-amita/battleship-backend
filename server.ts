@@ -27,7 +27,7 @@ io.on('connection', (socket) => {
     console.log(`socket id: ${socket.id}`)
 
     //admin
-    socket.on('resetGame', async (roomId: string, password: string) => {
+    socket.on('reset', async (roomId: string, password: string) => {
         if (password === 'iamadmin') {
             const room = await Room.findOne({ roomId })
             const update = {
@@ -43,16 +43,18 @@ io.on('connection', (socket) => {
                 'pReady.p2': false,
                 nextTurn: '',
             }
-            Room.updateOne({ roomId }, update)
+            await Room.updateOne({ roomId }, update)
             io.to(socket.id).to(room.pSocket.p1).to(room.pSocket.p2).emit('resetGame', true)
+            console.log('reset successful!')
         } else {
             socket.emit('resetGame', false)
+            console.log('wrong password!')
         }
     })
 
     // open page
     socket.on('userData', async (username: string, avatarName: string) => {
-        console.log(username)
+        console.log(`username=${username}`)
 
         const user = await User.findOne({ username })
         if (user == null) {
