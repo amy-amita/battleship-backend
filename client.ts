@@ -29,10 +29,8 @@ socket.on('connect', () => {
 //     console.log(cb)
 // });
 
-// //join game
-// socket.emit('joinGame', 'c069323e-09dc-4394-b1f3-37969a669f37', 'james', (cb: any) => {
-//     console.log(cb)
-//     });
+//join game
+socket.emit('joinGame', 'c069323e-09dc-4394-b1f3-37969a669f37', 'boom')
 
 // // findRoom
 // socket.emit('findRoom');
@@ -69,4 +67,9 @@ socket.on('connect', () => {
 
 // socket.on('chat', (username:string, message:string)=> {
 //     console.log(username, message);
+// })
+// socket.emit('findRoom')
+// socket.on('findRoom', (rooms) => {
+//     console.log(rooms)
+//     console.log(typeof rooms)
 // })
