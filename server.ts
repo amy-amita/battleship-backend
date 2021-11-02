@@ -307,7 +307,7 @@ io.on('connection', (socket) => {
                 const update = {
                     'pScore.p1': 0,
                     'pScore.p2': 0,
-                    // 'pShipPos.p1': '',
+                    'pShipPos.p1': '',
                     'pShipPos.p2': '',
                     'pHitPos.p1': '',
                     'pHitPos.p2': '',
@@ -380,8 +380,17 @@ io.on('connection', (socket) => {
         }
     })
 
-    socket.on('quitGame', async (username: string) => {
-        const user = await User.deleteOne({ username })
+    socket.on('quitRoom', async (roomId: string, username: string) => {
+        const room = await Room.findOne({ roomId })
+        if (room) {
+            let { pSocket, pName, pWinRound } = room
+            if (pName.p1 === username) {
+                io.to(pSocket.p1).emit('quitRoomResponse', pWinRound.p1, pWinRound.p2, pName.p1)
+            } else {
+                io.to(pSocket.p1).emit('quitRoomResponse', pWinRound.p1, pWinRound.p2, pName.p1)
+            }
+            Room.deleteOne({ roomId })
+        }
     })
 
     socket.on('disconnect', async () => {
