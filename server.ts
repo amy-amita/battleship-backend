@@ -313,7 +313,6 @@ io.on('connection', (socket) => {
                     'pMissPos.p2': '',
                     'pReady.p1': false,
                     'pReady.p2': false,
-                    nextTurn: lastWinner,
                     lastWinner: lastWinner,
                     roundCount: roundCount,
                 }
