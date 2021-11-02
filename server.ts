@@ -97,6 +97,7 @@ io.on('connection', (socket) => {
 
     //join game
     socket.on('joinGame', async (roomId: string, username: string) => {
+        console.log(`join room with id: ${roomId}`)
         const room = await Room.findOne({ roomId })
         if (room) {
             // console.log(room.pName.p1);
@@ -312,6 +313,8 @@ io.on('connection', (socket) => {
                     'pHitPos.p2': '',
                     'pMissPos.p1': '',
                     'pMissPos.p2': '',
+                    'pReady.p1': false,
+                    'pReady.p2': false,
                 }
                 await Room.updateOne({ roomId }, update)
             }
