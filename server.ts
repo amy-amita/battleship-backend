@@ -277,36 +277,34 @@ io.on('connection', (socket) => {
                     )
                 }
             }
+            // Game ends
             const updatedRoom = await Room.findOne({ roomId })
             const p1HitPos = updatedRoom.pHitPos.p1.split(',')
             const p2HitPos = updatedRoom.pHitPos.p2.split(',')
             let { pSocket, pName, round, roundCount, pWinRound } = updatedRoom
-            // console.log(p2HitPos, p2HitPos.length)
+
             if (p1HitPos.length == 16 || p2HitPos.length == 16) {
                 roundCount++
+                let lastWinner = ''
                 if (p1HitPos.length == 16) {
                     pWinRound.p1++
+                    lastWinner = pName.p1
                     io.to(pSocket.p1).emit('gameEnds', pName.p1, pWinRound.p1, pWinRound.p2, roundCount, round)
                     io.to(pSocket.p2).emit('gameEnds', pName.p1, pWinRound.p2, pWinRound.p1, roundCount, round)
                     console.log(`p1 won, round: ${roundCount}/${round}`)
-                    await Room.updateOne(
-                        { roomId },
-                        { lastWinner: pName.p1, 'pWinRound.p1': pWinRound.p1, roundCount: roundCount }
-                    )
                 } else if (p2HitPos.length == 16) {
                     pWinRound.p2++
+                    lastWinner = pName.p2
                     io.to(pSocket.p1).emit('gameEnds', pName.p2, pWinRound.p1, pWinRound.p2, roundCount, round)
                     io.to(pSocket.p2).emit('gameEnds', pName.p2, pWinRound.p2, pWinRound.p1, roundCount, round)
                     console.log(`p2 won, round: ${roundCount}/${round}`)
-                    await Room.updateOne(
-                        { roomId },
-                        { lastWinner: pName.p2, 'pWinRound.p2': pWinRound.p2, roundCount: roundCount }
-                    )
                 }
                 clearTimeout(timeoutIds[roomId])
                 const update = {
                     'pScore.p1': 0,
                     'pScore.p2': 0,
+                    'pWinRound.p1': pWinRound.p1,
+                    'pWinRound.p2': pWinRound.p2,
                     // 'pShipPos.p1': '',
                     'pShipPos.p2': '',
                     'pHitPos.p1': '',
@@ -315,6 +313,9 @@ io.on('connection', (socket) => {
                     'pMissPos.p2': '',
                     'pReady.p1': false,
                     'pReady.p2': false,
+                    nextTurn: lastWinner,
+                    lastWinner: lastWinner,
+                    roundCount: roundCount,
                 }
                 await Room.updateOne({ roomId }, update)
             }
