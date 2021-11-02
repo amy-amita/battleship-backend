@@ -24,7 +24,7 @@ let startTimeMS: any = {}
 let remainingTimeout: any = {}
 
 io.on('connection', (socket) => {
-    console.log(`socket id: ${socket.id}`)
+    console.log(`socket id: ${socket.id} connected`)
 
     //admin
     socket.on('reset', async (roomId: string, password: string) => {
@@ -305,7 +305,7 @@ io.on('connection', (socket) => {
                     'pScore.p2': 0,
                     'pWinRound.p1': pWinRound.p1,
                     'pWinRound.p2': pWinRound.p2,
-                    // 'pShipPos.p1': '',
+                    'pShipPos.p1': '',
                     'pShipPos.p2': '',
                     'pHitPos.p1': '',
                     'pHitPos.p2': '',
@@ -380,31 +380,23 @@ io.on('connection', (socket) => {
         }
     })
 
-    socket.on('quitGame', async (username: string) => {
-        const user = await User.deleteOne({ username })
+    socket.on('quitRoom', async (roomId: string, username: string) => {
+        const room = await Room.findOne({ roomId })
+        if (room) {
+            clearTimeout(timeoutIds[roomId])
+            let { pSocket, pName, pWinRound } = room
+            if (pName.p1 === username) {
+                io.to(pSocket.p1).emit('quitRoomResponse', pWinRound.p1, pWinRound.p2, pName.p1)
+            } else {
+                io.to(pSocket.p1).emit('quitRoomResponse', pWinRound.p1, pWinRound.p2, pName.p1)
+            }
+            Room.deleteOne({ roomId })
+        }
     })
 
     socket.on('disconnect', async () => {
-        const roomid = 'c069323e-09dc-4394-b1f3-37969a669f37'
-        const update = {
-            'pName.p2': '',
-            'pScoket.p2': '',
-            'pShipPos.p2': '',
-            'pWinRound.p2': 0,
-            'pReady.p2': false,
-            'pHitPos.p2': '',
-            'pMissPos.p2': '',
-            'pScore.p2': 0,
-        }
-        await Room.updateOne({ roomid }, update)
-
-        const room = await Room.findOne({ $or: [{ 'pSocket.p1': socket.id }, { 'pSocket.p2': socket.id }] })
-        if (room) {
-            const { roomId } = room
-            clearTimeout(timeoutIds[roomId])
-        }
-
-        console.log('Disconnected!')
+        User.deleteOne({ pSocket: socket.id })
+        console.log(`socket id: ${socket.id} disconnected!`)
     })
 })
 
