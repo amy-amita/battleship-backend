@@ -88,7 +88,7 @@ io.on('connection', (socket) => {
             lastWinner: '',
             timer: roundTime * 1000,
             round: round,
-            roundCount: 0,
+            roundCount: 1,
             roomStatus: roomStatus,
         })
         await room.save()
@@ -284,7 +284,6 @@ io.on('connection', (socket) => {
             let { pSocket, pName, round, roundCount, pWinRound } = updatedRoom
 
             if (p1HitPos.length == 16 || p2HitPos.length == 16) {
-                roundCount++
                 let lastWinner = ''
                 if (p1HitPos.length == 16) {
                     pWinRound.p1++
@@ -300,6 +299,7 @@ io.on('connection', (socket) => {
                     console.log(`p2 won, round: ${roundCount}/${round}`)
                 }
                 clearTimeout(timeoutIds[roomId])
+                roundCount++
                 const update = {
                     'pScore.p1': 0,
                     'pScore.p2': 0,
