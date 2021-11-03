@@ -358,9 +358,9 @@ io.on('connection', (socket) => {
     })
 
     socket.on('disconnect', async () => {
-        const roomid = 'c069323e-09dc-4394-b1f3-37969a669f37'
-        const update = { 'pName.p2': '', 'pShipPos.p2': '', 'pReady.p2': false, 'pHitPos.p2': '' }
-        await Room.updateOne({ roomid }, update)
+        // const roomid = 'c069323e-09dc-4394-b1f3-37969a669f37'
+        // const update = { 'pName.p2': '', 'pShipPos.p2': '', 'pReady.p2': false, 'pHitPos.p2': '' }
+        // await Room.updateOne({ roomid }, update)
 
         const room = await Room.findOne({ $or: [{ 'pSocket.p1': socket.id }, { 'pSocket.p2': socket.id }] })
         if (room) {
