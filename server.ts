@@ -45,7 +45,7 @@ io.on('connection', (socket) => {
                 'pReady.p2': false,
                 nextTurn: '',
             }
-            await Room.updateOne({ trimmedRoomId }, update)
+            await Room.updateOne({ roomId: trimmedRoomId }, update)
             io.to(socket.id).to(room.pSocket.p1).to(room.pSocket.p2).emit('checkReset', true)
             console.log('reset successful!')
         } else {
