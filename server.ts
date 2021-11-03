@@ -29,7 +29,9 @@ io.on('connection', (socket) => {
     //admin
     socket.on('reset', async (roomId: string, password: string) => {
         if (password === 'iamadmin') {
+            const trimmedRoomId = roomId.trim()
             const room = await Room.findOne({ roomId })
+            clearTimeout(timeoutIds[roomId])
             const update = {
                 'pScore.p1': 0,
                 'pScore.p2': 0,
@@ -381,6 +383,7 @@ io.on('connection', (socket) => {
             startTimeMS[roomId] = Date.now()
         }
     })
+
 
     socket.on('quitRoom', async (roomId: string, username: string) => {
         const room = await Room.findOne({ roomId })
