@@ -156,6 +156,7 @@ io.on('connection', (socket) => {
         room = await Room.findOne({ roomId })
         if (room) {
             if (room.pReady.p1 === true && room.pReady.p2 === true) {
+                console.log('Both players ready')
                 if (room.pWinRound.p1 === 0 && room.pWinRound.p2 === 0) {
                     if (Math.floor(Math.random() * 2) === 0) {
                         //parameter = player who begins, timer
@@ -188,6 +189,7 @@ io.on('connection', (socket) => {
                 }
             } else {
                 console.log('Waiting for another player')
+                // arai wa
                 socket.emit('Waiting for another player (ready)')
             }
         } else {
