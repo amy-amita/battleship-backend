@@ -4,7 +4,6 @@ import mongoose from 'mongoose'
 import User from './models/userSchema'
 import Room from './models/roomSchema'
 import SwearWord from './models/swearWordSchema'
-import cors from 'cors'
 
 //------------------------------------------- Connect to Database -------------------------------------------------//
 
