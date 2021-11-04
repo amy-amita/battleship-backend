@@ -1,1 +1,8 @@
 node_modules
+client.ts
+removeRoom.ts
+removeUser.ts
+index.html
+script.js
+wordlist.ts
+admin.html

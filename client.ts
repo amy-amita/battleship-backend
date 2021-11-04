@@ -19,9 +19,42 @@ import io from 'socket.io-client'
 //   messageInput.value = "";
 // })
 
-const socket = io('http://localhost:3031')
-socket.on('connect', () => {
-    console.log(socket.id)
+// const socket = io('http://localhost:3031')
+// socket.on('connect', () => {
+//     console.log(socket.id)
+// })
+
+const socket1 = io('battleship.southeastasia.azurecontainer.io')
+socket1.on('connect1', () => {
+    console.log(socket1.id)
+})
+const socket2 = io('http://battleship.southeastasia.azurecontainer.io')
+socket2.on('connect2', () => {
+    console.log(socket2.id)
+})
+const socket3 = io('http://battleship.southeastasia.azurecontainer.io:3031')
+socket3.on('connect3', () => {
+    console.log(socket3.id)
+})
+const socket4 = io('battleship.southeastasia.azurecontainer.io')
+socket4.on('connect4', () => {
+    console.log(socket4.id)
+})
+const socket5 = io('battleship.southeastasia.azurecontainer.io:3031')
+socket5.on('connect5', () => {
+    console.log(socket5.id)
+})
+const socket6 = io('20.212.121.243')
+socket5.on('connect6', () => {
+    console.log(socket6.id)
+})
+const socket7 = io('http://20.212.121.243')
+socket5.on('connect7', () => {
+    console.log(socket7.id)
+})
+const socket8 = io('http://20.212.121.243:3031')
+socket5.on('connect8', () => {
+    console.log(socket8.id)
 })
 
 // // create game
@@ -30,7 +63,7 @@ socket.on('connect', () => {
 // });
 
 //join game
-socket.emit('joinGame', 'c069323e-09dc-4394-b1f3-37969a669f37', 'boom')
+// socket.emit('joinGame', 'c069323e-09dc-4394-b1f3-37969a669f37', 'boom')
 
 // // findRoom
 // socket.emit('findRoom');
