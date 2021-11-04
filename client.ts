@@ -30,7 +30,7 @@ socket.on('connect', () => {
 // });
 
 //join game
-socket.emit('joinGame', 'c069323e-09dc-4394-b1f3-37969a669f37', 'boom')
+// socket.emit('joinGame', 'c069323e-09dc-4394-b1f3-37969a669f37', 'boom')
 
 // // findRoom
 // socket.emit('findRoom');
