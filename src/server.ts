@@ -348,6 +348,7 @@ io.on('connection', (socket) => {
     })
 
     socket.on('pause', async (roomId: string) => {
+        clearTimeout(timeoutIds[roomId])
         const room = await Room.findOne({ roomId })
         if (room) {
             console.log('PreviousRemainingTime:' + remainingTimeout[roomId])
@@ -358,9 +359,6 @@ io.on('connection', (socket) => {
             }
 
             console.log('RemainingTime:' + remainingTimeout[roomId])
-
-            clearTimeout(timeoutIds[roomId])
-
             io.to(room.pSocket.p1).to(room.pSocket.p2).emit('pauseResponse', true)
         }
     })
