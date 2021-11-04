@@ -90,7 +90,7 @@ io.on('connection', (socket) => {
             timer: roundTime * 1000,
             round: round,
             roundCount: 1,
-            roomStatus: roomStatus,
+            roomStatus: roomStatus || 'public',
         })
         await room.save()
         socket.emit('roomCode', roomId)
@@ -139,6 +139,7 @@ io.on('connection', (socket) => {
 
         // console.log(room);
         if (room) {
+            remainingTimeout[roomId] = room.timer
             if (room.pName.p1 === username) {
                 await Room.updateOne({ roomId }, { 'pShipPos.p1': shipPos, 'pReady.p1': true })
                 //parameter = opponent's name, roundCount, round
@@ -151,7 +152,6 @@ io.on('connection', (socket) => {
             console.log('Room does not exist 01')
             socket.emit('Room does not exist (ready)')
         }
-
         room = await Room.findOne({ roomId })
         if (room) {
             if (room.pReady.p1 === true && room.pReady.p2 === true) {
@@ -159,28 +159,24 @@ io.on('connection', (socket) => {
                     if (Math.floor(Math.random() * 2) === 0) {
                         //parameter = player who begins, timer
                         io.to(room.pSocket.p1).to(room.pSocket.p2).emit('checkReady', room.pName.p1, room.timer)
-                        const timeOutId = setTimeout(timeOut, remainingTimeout[roomId], 2, room)
-                        // const timeOutId = setTimeout(timeout, room.timer, room.pSocket.p1, room.pSocket.p2, 2, roomId)
+                        const timeOutId = setTimeout(timeOut, room.timer, 2, room)
                         startTimeMS[roomId] = Date.now()
                         timeoutIds[roomId] = timeOutId
                     } else {
                         io.to(room.pSocket.p1).to(room.pSocket.p2).emit('checkReady', room.pName.p2, room.timer)
-                        const timeOutId = setTimeout(timeOut, remainingTimeout[roomId], 1, room)
-                        // const timeOutId = setTimeout(timeout, room.timer, room.pSocket.p1, room.pSocket.p2, 1, roomId)
+                        const timeOutId = setTimeout(timeOut, room.timer, 1, room)
                         startTimeMS[roomId] = Date.now()
                         timeoutIds[roomId] = timeOutId
                     }
                 } else {
                     if (room.lastWinner === room.pName.p1) {
                         io.to(room.pSocket.p1).to(room.pSocket.p2).emit('checkReady', room.pName.p1, room.timer)
-                        const timeOutId = setTimeout(timeOut, remainingTimeout[roomId], 2, room)
-                        // const timeOutId = setTimeout(timeout, room.timer, room.pSocket.p1, room.pSocket.p2, 2, roomId)
+                        const timeOutId = setTimeout(timeOut, room.timer, 2, room)
                         startTimeMS[roomId] = Date.now()
                         timeoutIds[roomId] = timeOutId
                     } else {
                         io.to(room.pSocket.p1).to(room.pSocket.p2).emit('checkReady', room.pName.p2, room.timer)
-                        const timeOutId = setTimeout(timeOut, remainingTimeout[roomId], 1, room)
-                        // const timeOutId = setTimeout(timeout, room.timer, room.pSocket.p1, room.pSocket.p2, 1, roomId)
+                        const timeOutId = setTimeout(timeOut, room.timer, 1, room)
                         startTimeMS[roomId] = Date.now()
                         timeoutIds[roomId] = timeOutId
                     }
@@ -199,7 +195,7 @@ io.on('connection', (socket) => {
         const room = await Room.findOne({ roomId })
         clearTimeout(timeoutIds[roomId])
         startTimeMS[roomId] = 0
-
+        remainingTimeout[roomId] = room.timer
         if (room) {
             if (room.pName.p1 === username) {
                 const selfSocketId = room.pSocket.p1
@@ -211,8 +207,7 @@ io.on('connection', (socket) => {
                     io.to(selfSocketId).emit('attack', 'Hit', shootPos, room.pName.p1, p1NewScore)
                     io.to(otherSocketId).emit('attacked', 'Hit', shootPos, room.pName.p1, p1NewScore)
 
-                    const timeOutId = setTimeout(timeOut, remainingTimeout[roomId], 2, room)
-                    // const timeOutId = setTimeout(timeout, room.timer, room.pSocket.p1, room.pSocket.p2, 2, roomId)
+                    const timeOutId = setTimeout(timeOut, room.timer, 2, room)
                     startTimeMS[roomId] = Date.now()
                     timeoutIds[roomId] = timeOutId
 
@@ -227,8 +222,7 @@ io.on('connection', (socket) => {
                     io.to(selfSocketId).emit('attack', 'Missed', shootPos, room.pName.p2, room.pScore.p1)
                     io.to(otherSocketId).emit('attacked', 'Missed', shootPos, room.pName.p2, room.pScore.p1)
 
-                    const timeOutId = setTimeout(timeOut, remainingTimeout[roomId], 1, room)
-                    // const timeOutId = setTimeout(timeout, room.timer, room.pSocket.p1, room.pSocket.p2, 1, roomId)
+                    const timeOutId = setTimeout(timeOut, room.timer, 1, room)
                     startTimeMS[roomId] = Date.now()
                     timeoutIds[roomId] = timeOutId
 
@@ -249,8 +243,7 @@ io.on('connection', (socket) => {
                     io.to(selfSocketId).emit('attack', 'Hit', shootPos, room.pName.p2, p2NewScore)
                     io.to(otherSocketId).emit('attacked', 'Hit', shootPos, room.pName.p2, p2NewScore)
 
-                    const timeOutId = setTimeout(timeOut, remainingTimeout[roomId], 1, room)
-                    // const timeOutId = setTimeout(timeout, room.timer, room.pSocket.p1, room.pSocket.p2, 1, roomId)
+                    const timeOutId = setTimeout(timeOut, room.timer, 1, room)
                     startTimeMS[roomId] = Date.now()
                     timeoutIds[roomId] = timeOutId
 
@@ -265,8 +258,7 @@ io.on('connection', (socket) => {
                     io.to(selfSocketId).emit('attack', 'Missed', shootPos, room.pName.p1, room.pScore.p2)
                     io.to(otherSocketId).emit('attacked', 'Missed', shootPos, room.pName.p1, room.pScore.p2)
 
-                    const timeOutId = setTimeout(timeOut, remainingTimeout[roomId], 2, room)
-                    // const timeOutId = setTimeout(timeout, room.timer, room.pSocket.p1, room.pSocket.p2, 2, roomId)
+                    const timeOutId = setTimeout(timeOut, room.timer, 2, room)
                     startTimeMS[roomId] = Date.now()
                     timeoutIds[roomId] = timeOutId
 
@@ -352,11 +344,7 @@ io.on('connection', (socket) => {
         const room = await Room.findOne({ roomId })
         if (room) {
             console.log('PreviousRemainingTime:' + remainingTimeout[roomId])
-            if (remainingTimeout[roomId] === undefined) {
-                remainingTimeout[roomId] = getRemainingTime(roomId, room.timer)
-            } else {
-                remainingTimeout[roomId] = getRemainingTime(roomId, remainingTimeout[roomId])
-            }
+            remainingTimeout[roomId] = getRemainingTime(roomId, remainingTimeout[roomId])
 
             console.log('RemainingTime:' + remainingTimeout[roomId])
             io.to(room.pSocket.p1).to(room.pSocket.p2).emit('pauseResponse', true)
@@ -369,12 +357,10 @@ io.on('connection', (socket) => {
         io.to(room.pSocket.p1).to(room.pSocket.p2).emit('resumeResponse', remainingTimeout[roomId])
 
         if (room.nextTurn === room.pName.p1) {
-            // const timeOutId = setTimeout(timeout, remainingTimeout[roomId], room.pSocket.p1, room.pSocket.p2, 1, roomId)
             const timeOutId = setTimeout(timeOut, remainingTimeout[roomId], 2, room)
             timeoutIds[roomId] = timeOutId
             startTimeMS[roomId] = Date.now()
         } else {
-            // const timeOutId = setTimeout(timeout, remainingTimeout[roomId], room.pSocket.p1, room.pSocket.p2, 2, roomId)
             const timeOutId = setTimeout(timeOut, remainingTimeout[roomId], 1, room)
             timeoutIds[roomId] = timeOutId
             startTimeMS[roomId] = Date.now()
@@ -402,7 +388,7 @@ io.on('connection', (socket) => {
         if (room) {
             let { pSocket, roomId, pWinRound } = room
             clearTimeout(timeoutIds[roomId])
-            console.log('Unquit send quit')
+            console.log('delete Room')
             if (pSocket.p1 === socket.id) {
                 io.to(pSocket.p2).emit('quitRoomResponse', pWinRound.p2, pWinRound.p1)
             } else {
@@ -410,7 +396,7 @@ io.on('connection', (socket) => {
             }
             await Room.deleteOne({ roomId })
         } else {
-            console.log('already quit')
+            console.log('No room found')
         }
         console.log(`socket id: ${socket.id} disconnected!`)
     })
@@ -420,21 +406,25 @@ console.log('Server Started!')
 
 async function timeOut(nextTurn: number, room: any) {
     const { roomId } = room
-    let nextPlayer
-    if (nextTurn == 1) {
-        const timeOutId = setTimeout(timeOut, room.timer, 2, room)
-        timeoutIds[roomId] = timeOutId
-        nextPlayer = room.pName.p1
-    } else {
-        const timeOutId = setTimeout(timeOut, room.timer, 1, room)
-        timeoutIds[roomId] = timeOutId
-        nextPlayer = room.pName.p2
+    const checkRoom = await Room.findOne({ roomId })
+    if (checkRoom) {
+        let nextPlayer
+        if (nextTurn == 1) {
+            const timeOutId = setTimeout(timeOut, room.timer, 2, room)
+            timeoutIds[roomId] = timeOutId
+            nextPlayer = room.pName.p1
+        } else {
+            const timeOutId = setTimeout(timeOut, room.timer, 1, room)
+            timeoutIds[roomId] = timeOutId
+            nextPlayer = room.pName.p2
+        }
+        io.to(room.pSocket.p1).to(room.pSocket.p2).emit('timeOut', nextPlayer)
+        startTimeMS[roomId] = Date.now()
+        await Room.updateOne({ roomId }, { nextTurn: nextPlayer })
+        console.log('nextPlayer: ', nextPlayer)
+        console.log()
+        remainingTimeout[roomId] = room.timer
     }
-    io.to(room.pSocket.p1).to(room.pSocket.p2).emit('timeOut', nextPlayer)
-    startTimeMS[roomId] = Date.now()
-    await Room.updateOne({ roomId }, { nextTurn: nextPlayer })
-    // console.log('nextPlayer: ', nextPlayer)
-    remainingTimeout[roomId] = room.timer
 }
 
 function getRemainingTime(roomId: string, timerStep: number) {
