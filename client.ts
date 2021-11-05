@@ -1,3 +1,5 @@
+//fake client for testing only
+
 import io from 'socket.io-client'
 
 // const jsdom = require("jsdom");
